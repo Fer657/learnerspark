@@ -44,7 +44,7 @@ const patternRows: Row[] = [
   ["Complete: 1, 4, 9, 16, __", ["20", "24", "25", "36"], 2, "These are the squares of 1 through 5."],
   ["Complete: 7, 10, 16, 25, __", ["34", "35", "36", "37"], 3, "The increases are +3, +6, +9, then +12."],
   ["If each letter moves one place forward, PARK becomes…", ["QBSL", "QBQL", "OZQJ", "QBRL"], 0, "P→Q, A→B, R→S, K→L.", "coding_decoding"],
-  ["If each letter moves two places forward, ARMY becomes…", ["CTOA", "CTQ[A]", "ZPKW", "BSNZ"], 0, "A→C, R→T, M→O, Y→A. Option A is CTOA.", "coding_decoding"],
+  ["If each letter moves two places forward, ARMY becomes…", ["CTOA", "CTQB", "ZPKW", "BSNZ"], 0, "A→C, R→T, M→O, Y→A. Option A is CTOA.", "coding_decoding"],
   ["Which number does not belong: 4, 8, 12, 15, 20?", ["4", "8", "15", "20"], 2, "The others are multiples of four."],
   ["A rule changes 2 to 6, 3 to 12, and 4 to 20. What does it do to 5?", ["25", "30", "35", "40"], 1, "The rule is n × (n + 1): 5 × 6 = 30."],
   ["Complete the alternating series: 2, 4, 3, 6, 4, 8, __", ["5", "7", "9", "10"], 0, "Odd positions rise by one."],

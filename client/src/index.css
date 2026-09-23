@@ -332,6 +332,8 @@ h3 { font-size: 1.12rem; line-height: 1.15; font-weight: 600; }
 .mini-stat strong, .mini-stat small { display: block; }
 .mini-stat strong { color: var(--olive-dark); font: 600 .9rem var(--display); }
 .mini-stat small { margin-top: 2px; color: var(--steel); font: .55rem var(--mono); text-transform: uppercase; }
+.csss-result-cue { min-height: 76px; margin: 0 0 16px; color: var(--steel); font-size: .69rem; line-height: 1.45; }
+.csss-result-cue strong { display: block; margin-bottom: 4px; color: var(--orange-dark); font: 700 .56rem var(--mono); text-transform: uppercase; letter-spacing: .06em; }
 .csss-score { margin-top: 45px; }
 
 .upcoming-page { min-height: 600px; max-width: 850px; padding: 100px 24px 130px; margin: 0 auto; }
@@ -427,6 +429,7 @@ h3 { font-size: 1.12rem; line-height: 1.15; font-weight: 600; }
   .csss-section-results { grid-template-columns: 1fr; }
   .csss-section-result { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
   .csss-result-stats { margin: 0; padding-top: 0; border: 0; }
+  .csss-result-cue { grid-column: 1 / -1; min-height: 0; margin: 0; }
   .csss-section-result .progress-track { grid-column: 1 / -1; }
   .pause-card { padding: 25px 20px; }
   .pause-spec { gap: 7px; }

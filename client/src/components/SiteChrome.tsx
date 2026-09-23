@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { ArrowUpRight, Menu, ShieldCheck, X } from "lucide-react";
 
 const navItems = [
-  { label: "Practice", href: "/tests", status: "Next" },
+  { label: "Practice", href: "/csss", status: "Live" },
   { label: "Briefs", href: "/briefs", status: "Next" },
   { label: "Guides", href: "/guides", status: "Next" },
 ];
@@ -19,7 +19,7 @@ export function SiteHeader() {
           <span><strong className="brand-name">Learners Park</strong><small className="brand-tagline">Train like the board tests you.</small></span>
         </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {navItems.map((item) => <Link key={item.label} href={item.href} className={`nav-link ${location === item.href ? "is-active" : ""}`}>{item.label}<span className="nav-status">{item.status}</span></Link>)}
+          {navItems.map((item) => <Link key={item.label} href={item.href} className={`nav-link ${item.href === "/csss" && ["/csss", "/opam"].includes(location) || location === item.href ? "is-active" : ""}`}>{item.label}<span className="nav-status">{item.status}</span></Link>)}
           <Link href="/opam" className="nav-cta">Start a drill <ArrowUpRight size={15} /></Link>
         </nav>
         <button className="icon-button mobile-only" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? <X size={21} /> : <Menu size={21} />}</button>
@@ -45,7 +45,7 @@ export function GhostButton({ href, children, onClick, className = "" }: { href?
 export function ChoiceButton({ children, selected, onClick }: { children: ReactNode; selected?: boolean; onClick?: () => void }) { return <button className={`choice-button ${selected ? "is-selected" : ""}`} onClick={onClick}><span className="choice-radio">{selected ? "✓" : ""}</span><span>{children}</span></button>; }
 export function ProgressTrack({ value, tone = "orange" }: { value: number; tone?: "orange" | "olive" }) { return <div className="progress-track"><span className={`progress-fill ${tone}`} style={{ width: `${value}%` }} /></div>; }
 export function TimerRing({ seconds, total }: { seconds: number; total: number }) { const progress = Math.max(0, Math.min(1, seconds / total)); return <span className="timer-ring" style={{ background: `conic-gradient(var(--orange) ${progress * 360}deg, rgba(255,255,255,.12) 0deg)` }}><span>{seconds}</span></span>; }
-export function BackLink({ href = "/" }: { href?: string }) { return <Link href={href} className="back-link">← Back to Learners Park</Link>; }
+export function BackLink({ href = "/", label = "Back to Learners Park" }: { href?: string; label?: string }) { return <Link href={href} className="back-link">← {label}</Link>; }
 export function ScoreBar({ label, value, tone = "olive" }: { label: string; value: number; tone?: "olive" | "orange" | "steel" }) { return <div className="score-bar-wrap"><div className="score-bar-label"><span>{label}</span><strong>{value}%</strong></div><div className="score-bar"><span className={`score-bar-fill ${tone}`} style={{ width: `${value}%` }} /></div></div>; }
 export function PhasePill({ children = "Phase 1" }: { children?: ReactNode }) { return <span className="phase-pill">{children}</span>; }
 export function AccessNote() { return <p className="access-note">No account required · private by default · keyboard friendly</p>; }

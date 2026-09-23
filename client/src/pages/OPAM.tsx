@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Clock3, Fingerprint, HeartHandshake, ShieldCheck, TimerReset } from "lucide-react";
 import { BackLink, ChoiceButton, Counter, PageShell, PrimaryButton, ProgressTrack, PrintLink, ReportMetric, RestartButton, SectionEyebrow, SiteFooter, SiteHeader, StatusChip, TrustMark } from "../components/SiteChrome";
 import { forcedItems, opamBank, selfItems, situationItems, OPAM_COUNTS, type OpamForcedItem, type OpamPart, type OpamSelfItem, type OpamSituationItem } from "../data/opamBank";
@@ -19,6 +19,7 @@ export default function OPAM() {
   const [startedAt, setStartedAt] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [partScores, setPartScores] = useState({ self: 0, forced: 0, situation: 0 });
+  const answeringItemRef = useRef<string | null>(null);
   const total = opamBank.length;
   const completed = answers.length;
   const currentItems = part === "self" ? selfItems : part === "forced" ? forcedItems : situationItems;
@@ -29,6 +30,7 @@ export default function OPAM() {
 
   useEffect(() => {
     if (part === "landing" || part === "report") return;
+    answeringItemRef.current = null;
     setStartedAt(performance.now());
     setSeconds(15);
     const timer = window.setInterval(() => setSeconds((value) => {
@@ -42,6 +44,7 @@ export default function OPAM() {
   }, [part, index]);
 
   function start() {
+    answeringItemRef.current = null;
     setPart("self");
     setIndex(0);
     setAnswers([]);
@@ -50,13 +53,15 @@ export default function OPAM() {
 
   function finishAnswer(value: string, score = 1) {
     if (!item || part === "landing" || part === "report") return;
+    if (answeringItemRef.current === item.id) return;
+    answeringItemRef.current = item.id;
     const safePart = part as OpamPart;
     const nextAnswers = [...answers, { itemId: item.id, part: safePart, value, latency: Math.round(performance.now() - startedAt), score }];
     setAnswers(nextAnswers);
     setPartScores((old) => ({ ...old, [safePart]: old[safePart] + score }));
     if (index < currentItems.length - 1) return setIndex(index + 1);
-    if (safePart === "self") return setPart("forced");
-    if (safePart === "forced") return setPart("situation");
+    if (safePart === "self") { setIndex(0); return setPart("forced"); }
+    if (safePart === "forced") { setIndex(0); return setPart("situation"); }
     localStorage.setItem("learnerspark-opam-result", JSON.stringify({ answers: nextAnswers, savedAt: new Date().toISOString(), bankSize: total }));
     setPart("report");
   }
@@ -76,5 +81,5 @@ export default function OPAM() {
   const situationItem = item as OpamSituationItem;
   const promptText = isSelf ? selfItem.text : isForced ? forcedItem.left : situationItem.text;
   const situationOptions = isSituation ? situationItem.options : [];
-  return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>OPAM / {partLabel(part)}</span></div><div className="assessment-header-right"><Counter current={currentGlobal} total={total} /><div className="soft-timer"><span>SOFT TIMER</span><strong>{seconds}s</strong></div></div></div></header><main className="assessment-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">RUN STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps"><div className={isSelf ? "active" : "done"}><span>01</span><small>Self-description · {OPAM_COUNTS.self}</small></div><div className={isForced ? "active" : part === "situation" ? "done" : ""}><span>02</span><small>Forced choice · {OPAM_COUNTS.forced}</small></div><div className={isSituation ? "active" : ""}><span>03</span><small>Situation reaction · {OPAM_COUNTS.situation}</small></div></div><p className="rail-note">Once you answer, you move forward. That small constraint is part of the practice.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange">{isSelf ? selfItem.trait : isForced ? "Pick the more like me" : "Choose the responsible action"}</StatusChip><TrustMark /></div><div className="prompt-card"><div className="prompt-label">{isSelf ? selfItem.trait : isForced ? "FORCED CHOICE / BOTH OPTIONS ARE POSITIVE" : "SITUATION REACTION"}</div><h1>{promptText}</h1>{isSelf && <div className="choice-stack"><ChoiceButton onClick={() => finishAnswer("agree")}>Agree</ChoiceButton><ChoiceButton onClick={() => finishAnswer("disagree")}>Disagree</ChoiceButton></div>}{isForced && <div className="choice-stack"><ChoiceButton onClick={() => finishAnswer("left")}>{forcedItem.left}</ChoiceButton><ChoiceButton onClick={() => finishAnswer("right")}>{forcedItem.right}</ChoiceButton></div>}{isSituation && <div className="choice-stack">{situationOptions.map((option: string, optionIndex: number) => <ChoiceButton key={option} onClick={() => finishAnswer(String.fromCharCode(65 + optionIndex), optionIndex === situationItem.best ? 1 : 0)}>{option}</ChoiceButton>)}</div>}<p className="prompt-foot"><span>Response latency is recorded locally.</span><span>No back navigation.</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{completed} answered · {total - completed} to go</span></div></section></div></main></div></PageShell>;
+  return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>OPAM / {partLabel(part)}</span></div><div className="assessment-header-right"><Counter current={currentGlobal} total={total} /><div className="soft-timer"><span>SOFT TIMER</span><strong>{seconds}s</strong></div></div></div></header><main className="assessment-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">RUN STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps"><div className={isSelf ? "active" : "done"}><span>01</span><small>Self-description · {OPAM_COUNTS.self}</small></div><div className={isForced ? "active" : part === "situation" ? "done" : ""}><span>02</span><small>Forced choice · {OPAM_COUNTS.forced}</small></div><div className={isSituation ? "active" : ""}><span>03</span><small>Situation reaction · {OPAM_COUNTS.situation}</small></div></div><p className="rail-note">Once you answer, you move forward. That small constraint is part of the practice.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange">{isSelf ? selfItem.trait : isForced ? "Pick the more like me" : "Choose the responsible action"}</StatusChip><TrustMark /></div><div className="prompt-card"><div className="prompt-label">{isSelf ? selfItem.trait : isForced ? "FORCED CHOICE / BOTH OPTIONS ARE POSITIVE" : "SITUATION REACTION"}</div><h1>{promptText}</h1>{isSelf && <div className="choice-stack"><ChoiceButton onClick={() => finishAnswer("agree")}>Agree</ChoiceButton><ChoiceButton onClick={() => finishAnswer("disagree")}>Disagree</ChoiceButton></div>}{isForced && <div className="choice-stack"><ChoiceButton onClick={() => finishAnswer("left")}>{forcedItem.left}</ChoiceButton><ChoiceButton onClick={() => finishAnswer("right")}>{forcedItem.right}</ChoiceButton></div>}{isSituation && <div className="choice-stack">{situationOptions.map((option: string, optionIndex: number) => <ChoiceButton key={option} onClick={() => finishAnswer(String.fromCharCode(65 + optionIndex), optionIndex === situationItem.best ? 1 : 0)}>{option}</ChoiceButton>)}</div>}<p className="prompt-foot"><span>Response latency is recorded locally.</span><span>No back navigation within the run.</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{completed} answered · {total - completed} to go</span></div></section></div></main></div></PageShell>;
 }
