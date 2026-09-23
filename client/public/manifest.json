@@ -1,0 +1,10 @@
+{
+  "name": "Learners Park",
+  "short_name": "Learners Park",
+  "description": "Honest practice for SSB Stage 1 CSSS and OPAM preparation.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#182118",
+  "theme_color": "#3B4A2F",
+  "icons": []
+}
