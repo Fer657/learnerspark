@@ -1,66 +1,103 @@
 import { useEffect, useMemo, useState } from "react";
-import { AudioLines, Brain, Eye, Grid3X3, Headphones, Keyboard, Play, RotateCcw, ScanLine, ShieldCheck, Sparkles, TimerReset } from "lucide-react";
-import { BackLink, Counter, GhostButton, MiniStat, PageShell, PrimaryButton, ProgressTrack, ReportMetric, RestartButton, SectionEyebrow, SiteFooter, SiteHeader, StatusChip, TimerRing, TrustMark } from "../components/SiteChrome";
+import { AudioLines, Brain, Eye, Grid3X3, Headphones, Keyboard, Play, ScanLine, ShieldCheck, TimerReset } from "lucide-react";
+import { BackLink, Counter, MiniStat, PageShell, PrimaryButton, ProgressTrack, ReportMetric, RestartButton, SectionEyebrow, SiteFooter, SiteHeader, StatusChip, TimerRing, TrustMark } from "../components/SiteChrome";
+import { CSSS_SECTION_COUNTS, CSSS_TOTAL, csssBank, type CsssQuestion, type CsssSection } from "../data/csssBank";
 
 type Screen = "landing" | "run" | "pause" | "results";
-type SectionKey = "memory" | "spatial" | "pattern" | "language" | "audio";
-type Q = { section: SectionKey; sectionLabel: string; duration: number; prompt: string; options: string[]; answer: number; explanation: string };
-
-const questions: Q[] = [
-  { section: "memory", sectionLabel: "Working memory & selective attention", duration: 10, prompt: "A sequence flashes once: 4 · 9 · 2 · 7. Which number was third?", options: ["2", "4", "7", "9"], answer: 0, explanation: "The third position was 2. The skill here is holding sequence order, not doing maths." },
-  { section: "memory", sectionLabel: "Working memory & selective attention", duration: 10, prompt: "Keep the rule in mind: tap the odd symbol. Which one breaks the run?", options: ["△ △ △", "○ ○ ○", "□ □ ◇", "＋ ＋ ＋"], answer: 2, explanation: "The third row ends with a diamond, not a square." },
-  { section: "spatial", sectionLabel: "Spatial & form perception", duration: 22, prompt: "A paper arrow points north. Fold the page left once, then open it. Where does the crease sit?", options: ["At the centre line", "Along the top edge", "Along the left edge", "There is no crease"], answer: 0, explanation: "A single fold from the left places the crease on the centre line." },
-  { section: "pattern", sectionLabel: "Pattern recognition & reasoning", duration: 20, prompt: "Complete the series: 3, 6, 12, 24, __", options: ["30", "36", "42", "48"], answer: 3, explanation: "Each number doubles: 24 × 2 = 48." },
-  { section: "pattern", sectionLabel: "Pattern recognition & reasoning", duration: 20, prompt: "If FIELD becomes GJFME by shifting each letter one place forward, PARK becomes…", options: ["QBSL", "QBQL", "OZQJ", "QBRL"], answer: 0, explanation: "P→Q, A→B, R→S, K→L." },
-  { section: "language", sectionLabel: "Linguistic ability", duration: 16, prompt: "Choose the closest meaning of ‘measured’ in this sentence: She gave a measured reply.", options: ["Angry", "Careful and controlled", "Very long", "Unrelated"], answer: 1, explanation: "Measured means considered, calm, and controlled in this context." },
-  { section: "audio", sectionLabel: "Auditory discrimination", duration: 10, prompt: "Listen for the higher tone. Which label matches what you heard?", options: ["LOW", "HIGH", "TWO TONES", "NO TONE"], answer: 1, explanation: "The demo plays a high tone. In a full set, tone and number-string recall are mixed." },
-  { section: "audio", sectionLabel: "Auditory discrimination", duration: 10, prompt: "A voice says: 8 — 1 — 6. Which sequence did you hear?", options: ["8 — 6 — 1", "1 — 8 — 6", "8 — 1 — 6", "6 — 1 — 8"], answer: 2, explanation: "The heard sequence was 8 — 1 — 6." },
-];
-const sectionMeta: Record<SectionKey, { label: string; icon: typeof Brain; count: string }> = {
-  memory: { label: "Working memory", icon: Brain, count: "15Q / 10s" }, spatial: { label: "Spatial perception", icon: Eye, count: "15Q / 22s" }, pattern: { label: "Pattern reasoning", icon: Grid3X3, count: "15Q / 20s" }, language: { label: "Linguistic ability", icon: Keyboard, count: "15Q / 16s" }, audio: { label: "Auditory discrimination", icon: Headphones, count: "10Q / 10s" },
+const sectionMeta: Record<CsssSection, { label: string; icon: typeof Brain; count: string }> = {
+  memory: { label: "Working memory", icon: Brain, count: `${CSSS_SECTION_COUNTS.memory}Q / 10s` },
+  spatial: { label: "Spatial perception", icon: Eye, count: `${CSSS_SECTION_COUNTS.spatial}Q / 22s` },
+  pattern: { label: "Pattern reasoning", icon: Grid3X3, count: `${CSSS_SECTION_COUNTS.pattern}Q / 20s` },
+  language: { label: "Linguistic ability", icon: Keyboard, count: `${CSSS_SECTION_COUNTS.language}Q / 16s` },
+  audio: { label: "Auditory discrimination", icon: Headphones, count: `${CSSS_SECTION_COUNTS.audio}Q / 10s` },
 };
+const sectionOrder: CsssSection[] = ["memory", "spatial", "pattern", "language", "audio"];
+
+type Answer = { index: number; answer: number; latency: number; correct: boolean };
 
 export default function CSSS() {
   const [screen, setScreen] = useState<Screen>("landing");
   const [index, setIndex] = useState(0);
   const [seconds, setSeconds] = useState(10);
   const [startedAt, setStartedAt] = useState(0);
-  const [answers, setAnswers] = useState<Array<{ index: number; answer: number; latency: number }>>([]);
-  const question = questions[index];
-  const progress = (index / questions.length) * 100;
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const question: CsssQuestion | undefined = csssBank[index];
   const answered = answers.length;
-  const previousSection = index > 0 ? questions[index - 1].section : question?.section;
-  const hasSectionChanged = index > 0 && question && previousSection !== question.section;
-  const sectionQuestions = useMemo(() => questions.filter((item) => item.section === question?.section), [question?.section]);
+  const progress = (index / CSSS_TOTAL) * 100;
+  const nextSection = index < CSSS_TOTAL - 1 ? csssBank[index + 1].section : null;
+  const sectionQuestions = useMemo(() => csssBank.filter((item) => item.section === nextSection), [nextSection]);
 
   useEffect(() => {
     if (screen !== "run" || !question) return;
-    setSeconds(question.duration); setStartedAt(performance.now());
+    setSeconds(question.duration);
+    setStartedAt(performance.now());
     const timer = window.setInterval(() => setSeconds((value) => {
-      if (value <= 1) { window.clearInterval(timer); advance(-1); return question.duration; }
+      if (value <= 1) {
+        window.clearInterval(timer);
+        advance(-1);
+        return question.duration;
+      }
       return value - 1;
     }), 1000);
     return () => window.clearInterval(timer);
   }, [screen, index]);
 
-  function start() { setScreen("run"); setIndex(0); setAnswers([]); }
+  function start() {
+    setScreen("run");
+    setIndex(0);
+    setAnswers([]);
+  }
+
   function advance(answer: number) {
-    const latency = Math.round(performance.now() - startedAt);
-    const next = [...answers, { index, answer, latency }]; setAnswers(next);
-    if (index >= questions.length - 1) { localStorage.setItem("learnerspark-csss-result", JSON.stringify({ answers: next, savedAt: new Date().toISOString() })); setScreen("results"); return; }
-    if (questions[index + 1].section !== question.section) { setScreen("pause"); return; }
+    if (!question) return;
+    const next = [...answers, { index, answer, latency: Math.round(performance.now() - startedAt), correct: answer === question.answer }];
+    setAnswers(next);
+    if (index >= CSSS_TOTAL - 1) {
+      localStorage.setItem("learnerspark-csss-result", JSON.stringify({ answers: next, savedAt: new Date().toISOString(), bankSize: CSSS_TOTAL }));
+      setScreen("results");
+      return;
+    }
+    if (csssBank[index + 1].section !== question.section) {
+      setScreen("pause");
+      return;
+    }
     setIndex(index + 1);
   }
-  function continueSection() { setIndex(index + 1); setScreen("run"); }
-  function playTone() { const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext; if (!AudioContextClass) return; const ctx = new AudioContextClass(); const oscillator = ctx.createOscillator(); const gain = ctx.createGain(); oscillator.frequency.value = 740; oscillator.type = "sine"; gain.gain.value = 0.05; oscillator.connect(gain); gain.connect(ctx.destination); oscillator.start(); oscillator.stop(ctx.currentTime + 0.22); }
-  function getSectionScore(key: SectionKey) { const ids = questions.map((q, i) => q.section === key ? i : -1).filter((i) => i >= 0); const done = answers.filter((item) => ids.includes(item.index)); const correct = done.filter((item) => item.answer === questions[item.index].answer).length; return { correct, total: ids.length, accuracy: Math.round((correct / Math.max(done.length, 1)) * 100), speed: Math.round(done.reduce((sum, item) => sum + item.latency, 0) / Math.max(done.length, 1)) }; }
 
-  if (screen === "landing") return <PageShell><SiteHeader /><main className="assessment-landing csss-landing"><div className="container assessment-landing-grid"><div><BackLink /><div className="assessment-kicker"><span className="assessment-badge olive">CSSS</span><span>COMPUTERISED SELECTION SCREENING SYSTEM</span></div><h1>Stay useful when the clock gets loud.</h1><p className="assessment-lead">CSSS is a five-part cognitive battery. You do not need a clever trick for every question. You need attention that can reset, decide, and move.</p><PrimaryButton onClick={start}>Start the practice set</PrimaryButton><p className="assessment-note"><ShieldCheck size={14} /> This preview is original practice content, not official board questions.</p></div><div className="assessment-spec csss-spec"><div className="spec-heading"><ScanLine size={21} /><span>THE RUN / PREVIEW SET</span></div><div className="spec-number">08</div><p>demo questions · production sequence scales to 70</p><div className="spec-list"><div><TimerReset size={16} /><span>5 sections / hard timers</span></div><div><Keyboard size={16} /><span>once answered, no back navigation</span></div><div><AudioLines size={16} /><span>audio is gesture-initiated on device</span></div></div><div className="spec-foot"><span>10—22 SEC</span><span>NO BACK</span></div></div></div><div className="container"><div className="assessment-legal"><strong>Read this first.</strong><span>Run the demo in a quiet place. The point is not to prove you are fast; it is to see where speed changes your accuracy.</span></div></div></main><SiteFooter /></PageShell>;
+  function continueSection() {
+    setIndex(index + 1);
+    setScreen("run");
+  }
 
-  if (screen === "pause") return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / SECTION BREAK</span></div><span className="pause-label">PAUSE</span></div></header><main className="section-pause"><div className="pause-card"><span className="assessment-badge orange">NEXT SECTION</span><h1>{sectionMeta[question.section].label}</h1><p>Take one breath. The task shape changes here. The clock resets when you continue.</p><div className="pause-spec"><div><span>Questions</span><strong>{sectionQuestions.length}</strong></div><div><span>Per question</span><strong>{question.duration}s</strong></div><div><span>Direction</span><strong>No back</strong></div></div><PrimaryButton onClick={continueSection}>Continue to section</PrimaryButton></div></main></div></PageShell>;
+  function playTone() {
+    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.frequency.value = 740;
+    oscillator.type = "sine";
+    gain.gain.value = 0.05;
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.22);
+  }
 
-  if (screen === "results") { const scores = (Object.keys(sectionMeta) as SectionKey[]).map((key) => ({ key, ...getSectionScore(key) })); const overall = Math.round(scores.reduce((sum, score) => sum + score.accuracy, 0) / scores.length); const band = overall >= 75 ? "Strong" : overall >= 55 ? "Competitive" : "Needs work"; return <PageShell><SiteHeader /><main className="report-page csss-results"><div className="container report-shell"><div className="report-top"><div><SectionEyebrow>CSSS / RESULTS READOUT</SectionEyebrow><h1>Keep the signal. Adjust the method.</h1><p>This is a practice benchmark for this run, not a forecast of an official screening result.</p></div><div className="report-actions"><RestartButton onClick={start} /></div></div><div className="report-score-panel csss-score"><div><span className="report-score-label">OVERALL BAND</span><strong className="band-word">{band}</strong><span className="report-score-band">{overall}% accuracy across preview</span></div><div className="report-score-copy"><p>Notice the split between speed and accuracy. A strong next rep usually targets the section that became noisy, not the one that felt comfortable.</p><div className="report-metrics"><ReportMetric label="Questions" value={`${answers.length} / ${questions.length}`} /><ReportMetric label="Fastest section" value="Memory" /><ReportMetric label="Audio" value="Gesture ready" /></div></div></div><div className="csss-section-results">{scores.map((score) => { const Meta = sectionMeta[score.key]; const Icon = Meta.icon; return <article key={score.key} className="csss-section-result"><div className="csss-result-head"><span className="csss-result-icon"><Icon size={18} /></span><div><strong>{Meta.label}</strong><small>{Meta.count}</small></div><StatusChip tone={score.accuracy >= 75 ? "orange" : score.accuracy >= 50 ? "olive" : "steel"}>{score.accuracy >= 75 ? "Strong" : score.accuracy >= 50 ? "Competitive" : "Needs work"}</StatusChip></div><div className="csss-result-stats"><MiniStat label="accuracy" value={`${score.accuracy}%`} /><MiniStat label="avg latency" value={`${score.speed}ms`} /></div><ProgressTrack value={score.accuracy} tone={score.accuracy >= 75 ? "orange" : "olive"} /></article>})}</div><div className="mentor-debrief"><div className="mentor-debrief-label"><span>NEXT REP</span><span>CSSS / 01</span></div><p>Start with one section at a time. For memory, reset your eyes between items. For spatial, draw the fold in your head. For audio, do not rehearse the sound — listen, decide, move.</p></div><TrustMark /></div></main><SiteFooter /></PageShell>; }
+  function getSectionScore(key: CsssSection) {
+    const done = answers.filter((item) => csssBank[item.index].section === key);
+    const correct = done.filter((item) => item.correct).length;
+    return { correct, total: CSSS_SECTION_COUNTS[key], answered: done.length, accuracy: Math.round((correct / Math.max(done.length, 1)) * 100), speed: Math.round(done.reduce((sum, item) => sum + item.latency, 0) / Math.max(done.length, 1)) };
+  }
 
-  const Meta = sectionMeta[question.section]; const Icon = Meta.icon;
-  return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={questions.length} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{(Object.keys(sectionMeta) as SectionKey[]).map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = (Object.keys(sectionMeta) as SectionKey[]).indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label}</small></div>; })}</div><p className="rail-note">The hard timer is part of the shape. If it expires, the item is marked and the run continues.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><TrustMark /></div><div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div><h1>{question.prompt}</h1>{question.section === "audio" && <button className="audio-button" onClick={playTone}><span><Play size={15} fill="currentColor" /></span>Play the tone once</button>}<div className="choice-stack">{question.options.map((option, optionIndex) => <button key={option} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>Response time stays local.</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {questions.length - answered} to go</span></div></section></div></main></div></PageShell>;
+  if (screen === "landing") return <PageShell><SiteHeader /><main className="assessment-landing csss-landing"><div className="container assessment-landing-grid"><div><BackLink /><div className="assessment-kicker"><span className="assessment-badge olive">CSSS</span><span>COMPUTERISED SELECTION SCREENING SYSTEM</span></div><h1>Stay useful when the clock gets loud.</h1><p className="assessment-lead">CSSS now runs as a full 70-question cognitive battery across working memory, spatial perception, pattern reasoning, linguistic ability, and auditory discrimination.</p><PrimaryButton onClick={start}>Start the full practice set</PrimaryButton><p className="assessment-note"><ShieldCheck size={14} /> This is original practice content, not official board questions.</p></div><div className="assessment-spec csss-spec"><div className="spec-heading"><ScanLine size={21} /><span>THE RUN / FULL BANK</span></div><div className="spec-number">70</div><p>14 questions per section · original explanations included</p><div className="spec-list"><div><TimerReset size={16} /><span>5 sections / hard timers</span></div><div><Keyboard size={16} /><span>once answered, no back navigation</span></div><div><AudioLines size={16} /><span>audio is gesture-initiated on device</span></div></div><div className="spec-foot"><span>10—22 SEC</span><span>NO BACK</span></div></div></div><div className="container"><div className="assessment-legal"><strong>Read this first.</strong><span>Run the full bank in a quiet place. The point is not to prove you are fast; it is to see where speed changes your accuracy. Explanations appear in the result readout.</span></div></div></main><SiteFooter /></PageShell>;
+
+  if (screen === "pause" && question && nextSection) { const NextMeta = sectionMeta[nextSection]; return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / SECTION BREAK</span></div><span className="pause-label">PAUSE</span></div></header><main className="section-pause"><div className="pause-card"><span className="assessment-badge orange">NEXT SECTION</span><h1>{NextMeta.label}</h1><p>Take one breath. The task shape changes here. The clock resets when you continue.</p><div className="pause-spec"><div><span>Questions</span><strong>{sectionQuestions.length}</strong></div><div><span>Per question</span><strong>{csssBank[index + 1].duration}s</strong></div><div><span>Direction</span><strong>No back</strong></div></div><PrimaryButton onClick={continueSection}>Continue to section</PrimaryButton></div></main></div></PageShell>; }
+
+  if (screen === "results") { const scores = sectionOrder.map((key) => ({ key, ...getSectionScore(key) })); const overall = Math.round(scores.reduce((sum, score) => sum + score.accuracy, 0) / scores.length); const band = overall >= 75 ? "Strong" : overall >= 55 ? "Competitive" : "Needs work"; const median = Math.round(answers.map((item) => item.latency).sort((a, b) => a - b)[Math.floor(answers.length / 2)] || 0); return <PageShell><SiteHeader /><main className="report-page csss-results"><div className="container report-shell"><div className="report-top"><div><SectionEyebrow>CSSS / RESULTS READOUT</SectionEyebrow><h1>Keep the signal. Adjust the method.</h1><p>This is a practice benchmark for all 70 questions, not a forecast of an official screening result.</p></div><div className="report-actions"><RestartButton onClick={start} /></div></div><div className="report-score-panel csss-score"><div><span className="report-score-label">OVERALL BAND</span><strong className="band-word">{band}</strong><span className="report-score-band">{overall}% accuracy across full bank</span></div><div className="report-score-copy"><p>Notice the split between speed and accuracy. A strong next rep usually targets the section that became noisy, not the one that felt comfortable.</p><div className="report-metrics"><ReportMetric label="Questions" value={`${answers.length} / ${CSSS_TOTAL}`} /><ReportMetric label="Median latency" value={`${median}ms`} /><ReportMetric label="Correct" value={`${answers.filter((item) => item.correct).length} / ${CSSS_TOTAL}`} /></div></div></div><div className="csss-section-results">{scores.map((score) => { const Meta = sectionMeta[score.key]; const Icon = Meta.icon; return <article key={score.key} className="csss-section-result"><div className="csss-result-head"><span className="csss-result-icon"><Icon size={18} /></span><div><strong>{Meta.label}</strong><small>{score.answered} / {Meta.count}</small></div><StatusChip tone={score.accuracy >= 75 ? "orange" : score.accuracy >= 50 ? "olive" : "steel"}>{score.accuracy >= 75 ? "Strong" : score.accuracy >= 50 ? "Competitive" : "Needs work"}</StatusChip></div><div className="csss-result-stats"><MiniStat label="accuracy" value={`${score.accuracy}%`} /><MiniStat label="avg latency" value={`${score.speed}ms`} /></div><ProgressTrack value={score.accuracy} tone={score.accuracy >= 75 ? "orange" : "olive"} /></article>})}</div><div className="mentor-debrief"><div className="mentor-debrief-label"><span>NEXT REP</span><span>CSSS / 70</span></div><p>Start with the section that went noisy, not the one that felt comfortable. For memory, reset your eyes between items. For spatial, draw the fold in your head. For audio, do not rehearse the sound — listen, decide, move.</p></div><TrustMark /></div></main><SiteFooter /></PageShell>; }
+
+  if (!question) return null;
+  const Meta = sectionMeta[question.section];
+  const Icon = Meta.icon;
+  return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">The hard timer is part of the shape. If it expires, the item is marked and the run continues.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><TrustMark /></div><div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div><h1>{question.prompt}</h1>{question.section === "audio" && <button className="audio-button" onClick={playTone}><span><Play size={15} fill="currentColor" /></span>Play the tone once</button>}<div className="choice-stack">{question.options.map((option, optionIndex) => <button key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>Response time stays local.</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
 }
