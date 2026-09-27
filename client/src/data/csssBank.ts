@@ -48,10 +48,10 @@ const patternRows: Row[] = [
   ["Choose the missing value in the decreasing sequence.", ["24", "20", "18", "12"], 1, "The next subtraction is 28: 48 − 28 = 20."],
   ["Which pair has the same relationship as 3 : 12?", ["4 : 12", "5 : 20", "6 : 18", "7 : 21"], 1, "The relationship is ×4."],
   ["Apply the same letter-shift rule and select the correct code.", ["EPH", "EOH", "CNG", "FPH"], 0, "Each letter moves one place forward."],
-  ["Which tile completes the visual pattern?", ["● ○ ●", "○ ● ○", "● ● ○", "○ ○ ●"], 0, "The alternating row begins and ends with a filled circle.", "nonverbal_grid"],
-  ["Which shape should come next in the rotation?", ["▲", "▶", "▼", "◀"], 1, "The shape rotates 90 degrees clockwise.", "nonverbal_rotation"],
-  ["Which option mirrors the shown arrangement?", ["◆ · ○", "○ · ◆", "◆ · ◆", "○ · ○"], 1, "The mirrored arrangement reverses the left and right positions.", "nonverbal_mirror"],
-  ["Select the missing symbol in the visual sequence.", ["□", "△", "○", "◇"], 2, "The sequence alternates angular and curved forms.", "nonverbal_sequence"],
+  ["Shown pattern: ● ○ __. Which tile completes the alternating visual pattern?", ["● ○ ●", "○ ● ○", "● ● ○", "○ ○ ●"], 0, "The alternating row begins and ends with a filled circle.", "nonverbal_grid"],
+  ["Shown shape: ▲. It rotates 90° clockwise once. Which shape comes next?", ["▲", "▶", "▼", "◀"], 1, "The shape rotates 90 degrees clockwise.", "nonverbal_rotation"],
+  ["Shown arrangement: ◆ · ○. Which option is its left-right mirror?", ["◆ · ○", "○ · ◆", "◆ · ◆", "○ · ○"], 1, "The mirrored arrangement reverses the left and right positions.", "nonverbal_mirror"],
+  ["Shown sequence: □, △, __, ◇. Which symbol fills the missing position?", ["□", "△", "○", "◇"], 2, "The sequence alternates angular and curved forms.", "nonverbal_sequence"],
 ];
 const languageRows: Row[] = [
   ["Closest meaning of ‘measured’ in ‘a measured reply’:", ["Angry", "Careful and controlled", "Very long", "Unrelated"], 1, "Measured means considered and controlled."],
