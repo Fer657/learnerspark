@@ -5,7 +5,7 @@ Learners Park is an independent, mobile-first practice platform for Indian defen
 ## Phase 2 included
 
 - Editorial home page with the Learners Park brand system, Stage 1 explainer, 15 OLQ grouping, differentiators, testimonials, trust notice, and official links.
-- CSSS practice engine at `/csss`: 70 original items across five sections split 15/15/15/15/10, with hard per-question timers, no back navigation, section pauses, local response timing, spoken number-string prompts for audio practice, and benchmarked results.
+- CSSS practice engine at `/csss`: 70 original items across five sections split 15/15/15/15/10, with hard per-question timers shortened by 10 seconds, no back navigation, section pauses, local response timing, verbal and non-verbal reasoning items, and an audio-only auditory section where each spoken cue autoplays once without printing the sequence.
 - OPAM practice engine at `/opam`: 120 original items across 60 self-description statements, 35 forced-choice pairs, and 25 situation reactions, with a 15-second soft timer, no back navigation, local response latency, shuffled situation option order, and mentor-style debrief output.
 - Placeholder routes for `/tests`, `/briefs`, and `/guides` that are intentionally labeled as Phase 2/3 rather than dead links.
 - SEO metadata, responsive mobile layouts, PWA manifest, robots file, and reduced-motion support.

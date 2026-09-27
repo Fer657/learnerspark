@@ -1,4 +1,4 @@
-import { OPAM_COUNTS, OPAM_TOTAL, forcedItems, opamBank, selfItems, situationItems } from "../client/src/data/opamBank";
+import { mixedOpamItems, OPAM_COUNTS, OPAM_TOTAL, forcedItems, opamBank, selfItems, situationItems } from "../client/src/data/opamBank";
 import { CSSS_SECTION_COUNTS, CSSS_TOTAL, csssBank } from "../client/src/data/csssBank";
 
 const assert = (condition: boolean, message: string) => {
@@ -17,10 +17,14 @@ assert(unique(situationItems.map((item) => item.text)), "OPAM situation prompts 
 assert(situationItems.every((item) => item.options.length === 4 && item.best >= 0 && item.best < 4), "OPAM situations have four options and valid best indexes");
 assert(new Set(situationItems.map((item) => item.best)).size > 1, "OPAM responsible options are shuffled");
 assert(forcedItems.every((item) => item.left !== item.right && item.leftOlq !== item.rightOlq), "OPAM forced pairs are distinct and cross-tagged");
+assert(mixedOpamItems.length === OPAM_TOTAL, "OPAM mixed sequence preserves all 120 items");
+assert((mixedOpamItems.filter((item) => item.type === "self").length === OPAM_COUNTS.self) && (mixedOpamItems.filter((item) => item.type === "forced").length === OPAM_COUNTS.forced) && (mixedOpamItems.filter((item) => item.type === "situation").length === OPAM_COUNTS.situation), "OPAM mixed sequence preserves type distribution");
+assert(mixedOpamItems.slice(0, -1).filter((item, index) => item.type === mixedOpamItems[index + 1].type).length < 20, "OPAM mixed sequence avoids repetitive type runs");
 assert(CSSS_TOTAL === 70 && csssBank.length === 70, `CSSS total is ${CSSS_TOTAL}`);
 assert(CSSS_SECTION_COUNTS.memory === 15 && CSSS_SECTION_COUNTS.spatial === 15 && CSSS_SECTION_COUNTS.pattern === 15 && CSSS_SECTION_COUNTS.language === 15 && CSSS_SECTION_COUNTS.audio === 10, "CSSS section split is 15/15/15/15/10");
 assert(unique(csssBank.map((item) => item.id)), "CSSS ids are unique");
 assert(unique(csssBank.map((item) => item.prompt)), "CSSS prompts are unique");
 assert(csssBank.every((item) => item.options.length === 4 && item.answer >= 0 && item.answer < 4 && item.explanation.length > 10), "CSSS items have four options, valid answers, and explanations");
 assert(!csssBank.some((item) => item.prompt.includes("CTO[A]")), "CSSS coding typo is removed");
+assert(new Set(csssBank.map((item) => item.subtype)).size >= 12, "CSSS uses a broad range of relevant question subtypes");
 console.log("PASS content audit complete");

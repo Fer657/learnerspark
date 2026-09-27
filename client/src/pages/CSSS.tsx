@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AudioLines, Brain, Eye, Grid3X3, Headphones, Keyboard, Play, ScanLine, ShieldCheck, TimerReset } from "lucide-react";
+import { AudioLines, Brain, Eye, Grid3X3, Headphones, Keyboard, ScanLine, ShieldCheck, TimerReset } from "lucide-react";
 import { BackLink, Counter, MiniStat, PageShell, PrimaryButton, ProgressTrack, ReportMetric, RestartButton, SectionEyebrow, SiteFooter, SiteHeader, StatusChip, TimerRing, TrustMark } from "../components/SiteChrome";
 import { CSSS_SECTION_COUNTS, CSSS_TOTAL, csssBank, type CsssQuestion, type CsssSection } from "../data/csssBank";
 
 type Screen = "landing" | "run" | "pause" | "results";
 
 const sectionMeta: Record<CsssSection, { label: string; icon: typeof Brain; count: string }> = {
-  memory: { label: "Working memory", icon: Brain, count: `${CSSS_SECTION_COUNTS.memory}Q / 10s` },
-  spatial: { label: "Spatial perception", icon: Eye, count: `${CSSS_SECTION_COUNTS.spatial}Q / 22s` },
-  pattern: { label: "Pattern reasoning", icon: Grid3X3, count: `${CSSS_SECTION_COUNTS.pattern}Q / 20s` },
-  language: { label: "Linguistic ability", icon: Keyboard, count: `${CSSS_SECTION_COUNTS.language}Q / 16s` },
-  audio: { label: "Auditory discrimination", icon: Headphones, count: `${CSSS_SECTION_COUNTS.audio}Q / 16s` },
+  memory: { label: "Working memory", icon: Brain, count: `${CSSS_SECTION_COUNTS.memory}Q / 5s` },
+  spatial: { label: "Spatial perception", icon: Eye, count: `${CSSS_SECTION_COUNTS.spatial}Q / 12s` },
+  pattern: { label: "Verbal + non-verbal reasoning", icon: Grid3X3, count: `${CSSS_SECTION_COUNTS.pattern}Q / 10s` },
+  language: { label: "Linguistic ability", icon: Keyboard, count: `${CSSS_SECTION_COUNTS.language}Q / 6s` },
+  audio: { label: "Auditory discrimination", icon: Headphones, count: `${CSSS_SECTION_COUNTS.audio}Q / 6s` },
 };
 
 const sectionOrder: CsssSection[] = ["memory", "spatial", "pattern", "language", "audio"];
@@ -23,6 +23,7 @@ export default function CSSS() {
   const [startedAt, setStartedAt] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const answeringQuestionRef = useRef<string | null>(null);
+  const audioPlayedQuestionRef = useRef<string | null>(null);
   const question: CsssQuestion | undefined = csssBank[index];
   const answered = answers.length;
   const progress = (index / CSSS_TOTAL) * 100;
@@ -34,6 +35,7 @@ export default function CSSS() {
     answeringQuestionRef.current = null;
     setSeconds(question.duration);
     setStartedAt(performance.now());
+    playAudioOnce(question);
     const timer = window.setInterval(() => setSeconds((value) => {
       if (value <= 1) {
         window.clearInterval(timer);
@@ -47,6 +49,7 @@ export default function CSSS() {
 
   function start() {
     answeringQuestionRef.current = null;
+    audioPlayedQuestionRef.current = null;
     setScreen("run");
     setIndex(0);
     setAnswers([]);
@@ -66,16 +69,25 @@ export default function CSSS() {
       setScreen("pause");
       return;
     }
+    if (csssBank[index + 1].section === "audio") playAudioOnce(csssBank[index + 1], true);
     setIndex(index + 1);
   }
 
   function continueSection() {
+    if (csssBank[index + 1]?.section === "audio") playAudioOnce(csssBank[index + 1], true);
     setIndex(index + 1);
     setScreen("run");
   }
 
-  function playAudioCue() {
-    const sequence = question?.prompt.match(/number string ([0-9–-]+)/i)?.[1];
+  function playAudioOnce(target: CsssQuestion, immediate = false) {
+    if (target.section !== "audio" || audioPlayedQuestionRef.current === target.id) return;
+    audioPlayedQuestionRef.current = target.id;
+    if (immediate) playAudioCue(target);
+    else window.setTimeout(() => playAudioCue(target), 80);
+  }
+
+  function playAudioCue(target: CsssQuestion = question as CsssQuestion) {
+    const sequence = target?.audioText;
     if (sequence && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(sequence.split(/[–-]/).join(" ... "));
@@ -115,7 +127,7 @@ export default function CSSS() {
     return miss ? csssBank[miss.index].explanation : "Clean run in this section — keep the same pace and method.";
   }
 
-  if (screen === "landing") return <PageShell><SiteHeader /><main className="assessment-landing csss-landing"><div className="container assessment-landing-grid"><div><BackLink /><div className="assessment-kicker"><span className="assessment-badge olive">CSSS</span><span>COMPUTERISED SELECTION SCREENING SYSTEM</span></div><h1>Stay useful when the clock gets loud.</h1><p className="assessment-lead">CSSS now runs as a full 70-question cognitive battery across working memory, spatial perception, pattern reasoning, linguistic ability, and auditory discrimination.</p><PrimaryButton onClick={start}>Start the full practice set</PrimaryButton><p className="assessment-note"><ShieldCheck size={14} /> This is original practice content, not official board questions.</p></div><div className="assessment-spec csss-spec"><div className="spec-heading"><ScanLine size={21} /><span>THE RUN / FULL BANK</span></div><div className="spec-number">70</div><p>15 memory · 15 spatial · 15 pattern · 15 language · 10 audio</p><div className="spec-list"><div><TimerReset size={16} /><span>5 sections / hard timers</span></div><div><Keyboard size={16} /><span>once answered, no back navigation</span></div><div><AudioLines size={16} /><span>audio uses spoken number scripts</span></div></div><div className="spec-foot"><span>10—22 SEC</span><span>NO BACK</span></div></div></div><div className="container"><div className="assessment-legal"><strong>Read this first.</strong><span>Run the full bank in a quiet place. The point is not to prove you are fast; it is to see where speed changes your accuracy. Explanations appear in the result readout.</span></div></div></main><SiteFooter /></PageShell>;
+  if (screen === "landing") return <PageShell><SiteHeader /><main className="assessment-landing csss-landing"><div className="container assessment-landing-grid"><div><BackLink /><div className="assessment-kicker"><span className="assessment-badge olive">CSSS</span><span>COMPUTERISED SELECTION SCREENING SYSTEM</span></div><h1>Stay useful when the clock gets loud.</h1><p className="assessment-lead">CSSS now runs as a full 70-question cognitive battery across working memory, spatial perception, verbal + non-verbal reasoning, linguistic ability, and auditory discrimination.</p><PrimaryButton onClick={start}>Start the full practice set</PrimaryButton><p className="assessment-note"><ShieldCheck size={14} /> This is original practice content, not official board questions.</p></div><div className="assessment-spec csss-spec"><div className="spec-heading"><ScanLine size={21} /><span>THE RUN / FULL BANK</span></div><div className="spec-number">70</div><p>15 memory · 15 spatial · 15 reasoning · 15 language · 10 audio</p><div className="spec-list"><div><TimerReset size={16} /><span>5 sections / timers shortened by 10 sec</span></div><div><Keyboard size={16} /><span>once answered, no back navigation</span></div><div><AudioLines size={16} /><span>audio task plays once automatically</span></div></div><div className="spec-foot"><span>5—12 SEC</span><span>NO BACK</span></div></div></div><div className="container"><div className="assessment-legal"><strong>Read this first.</strong><span>Run the full bank in a quiet place. Listen once during the auditory task, then select the sequence you heard. The spoken content is intentionally not shown on screen.</span></div></div></main><SiteFooter /></PageShell>;
 
   if (screen === "pause" && question && nextSection) {
     const NextMeta = sectionMeta[nextSection];
@@ -133,5 +145,5 @@ export default function CSSS() {
   if (!question) return null;
   const Meta = sectionMeta[question.section];
   const Icon = Meta.icon;
-    return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">The hard timer is part of the shape. If it expires, the item is marked and the run continues.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><TrustMark /></div><div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div><h1>{question.prompt}</h1>{question.section === "audio" && <button type="button" className="audio-button" onClick={playAudioCue}><span><Play size={15} fill="currentColor" /></span>Play the spoken cue once</button>}<div className="choice-stack">{question.options.map((option, optionIndex) => <button type="button" key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>Response time stays local.</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
+    return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">The timer is part of the task. Audio plays once automatically; the spoken sequence is not printed on screen.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><TrustMark /></div><div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div><h1>{question.prompt}</h1><div className="choice-stack">{question.options.map((option, optionIndex) => <button type="button" key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>{question.section === "audio" ? "Listen once, then answer." : "Response time stays local."}</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
 }

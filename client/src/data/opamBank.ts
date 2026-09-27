@@ -67,3 +67,23 @@ export const situationItems: OpamSituationItem[] = situationSeeds.map((seed, ind
 export const opamBank: OpamItem[] = [...selfItems, ...forcedItems, ...situationItems];
 export const OPAM_TOTAL = opamBank.length;
 export const OPAM_COUNTS = { self: selfItems.length, forced: forcedItems.length, situation: situationItems.length };
+
+// The bank is stored by module for reporting and validation, but the live run uses
+// a mixed sequence so candidates repeatedly switch between self-description,
+// forced-choice trade-offs, and practical situation reactions.
+export const mixedOpamItems: OpamItem[] = (() => {
+  const pools: Record<OpamItem["type"], OpamItem[]> = { self: [...selfItems], forced: [...forcedItems], situation: [...situationItems] };
+  const totals: Record<OpamItem["type"], number> = { self: selfItems.length, forced: forcedItems.length, situation: situationItems.length };
+  const used: Record<OpamItem["type"], number> = { self: 0, forced: 0, situation: 0 };
+  const sequence: OpamItem[] = [];
+  let previous: OpamItem["type"] | null = null;
+  while (sequence.length < OPAM_TOTAL) {
+    const available = (Object.keys(pools) as OpamItem["type"][]).filter((type) => pools[type].length > 0 && type !== previous);
+    const nextType = available.sort((left, right) => used[left] / totals[left] - used[right] / totals[right])[0] ?? (Object.keys(pools) as OpamItem["type"][]).find((type) => pools[type].length > 0);
+    if (!nextType) break;
+    sequence.push(pools[nextType].shift() as OpamItem);
+    used[nextType] += 1;
+    previous = nextType;
+  }
+  return sequence;
+})();
