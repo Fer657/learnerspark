@@ -1,23 +1,23 @@
 export type CsssSection = "memory" | "spatial" | "pattern" | "language" | "audio";
-export type CsssQuestion = { id: string; section: CsssSection; sectionLabel: string; subtype: string; duration: number; prompt: string; renderHint?: string; audioText?: string; options: string[]; answer: number; explanation: string };
+export type CsssQuestion = { id: string; section: CsssSection; sectionLabel: string; subtype: string; duration: number; prompt: string; renderHint?: string; flashText?: string; audioText?: string; options: string[]; answer: number; explanation: string };
 type Row = [string, string[], number, string, string?, string?];
 
 const memoryRows: Row[] = [
-  ["A sequence flashes once: 4 · 9 · 2 · 7. Which number was third?", ["2", "4", "7", "9"], 0, "The third position is 2.", "digit_recall"],
-  ["A sequence flashes once: 8 · 1 · 6 · 3. Which number was last?", ["1", "3", "6", "8"], 1, "The last position is 3.", "digit_recall"],
-  ["A sequence flashes once: 5 · 2 · 9 · 4. Which number was first?", ["2", "4", "5", "9"], 2, "The first position is 5.", "digit_recall"],
-  ["A sequence flashes once: 7 · 3 · 8 · 1. Which number was second?", ["1", "3", "7", "8"], 1, "The second position is 3.", "digit_recall"],
-  ["A sequence flashes once: 6 · 4 · 1 · 8. Which number was third?", ["1", "4", "6", "8"], 0, "The third position is 1.", "digit_recall"],
-  ["A sequence flashes once: 9 · 5 · 2 · 6. Which number was last?", ["2", "5", "6", "9"], 2, "The last position is 6.", "digit_recall"],
-  ["A sequence flashes once: 3 · 8 · 5 · 0. Which number was second?", ["0", "3", "5", "8"], 3, "The second position is 8.", "digit_recall"],
-  ["A sequence flashes once: 1 · 7 · 4 · 9. Which number was first?", ["1", "4", "7", "9"], 0, "The first position is 1.", "digit_recall"],
-  ["Remember 4 · 8 · 2. Add one to each number. Which transformed sequence is correct?", ["5 · 9 · 3", "4 · 9 · 2", "5 · 8 · 3", "3 · 7 · 1"], 0, "Each number increases by one: 5 · 9 · 3.", "updating_memory"],
+  ["A sequence flashes once: 4 · 9 · 2 · 7. Which number occupied position three?", ["2", "4", "7", "9"], 0, "The third position is 2.", "digit_recall"],
+  ["A sequence flashes once: 8 · 1 · 6 · 3. Which number appeared at the end?", ["1", "3", "6", "8"], 1, "The last position is 3.", "digit_recall"],
+  ["A sequence flashes once: 5 · 2 · 9 · 4. Which number opened the sequence?", ["2", "4", "5", "9"], 2, "The first position is 5.", "digit_recall"],
+  ["A sequence flashes once: 7 · 3 · 8 · 1. Select the value in position two.", ["1", "3", "7", "8"], 1, "The second position is 3.", "digit_recall"],
+  ["A sequence flashes once: 6 · 4 · 1 · 8. Recall the value in the third slot.", ["1", "4", "6", "8"], 0, "The third position is 1.", "digit_recall"],
+  ["A sequence flashes once: 9 · 5 · 2 · 6. Select the final value.", ["2", "5", "6", "9"], 2, "The last position is 6.", "digit_recall"],
+  ["A sequence flashes once: 3 · 8 · 5 · 0. Which value followed the first one?", ["0", "3", "5", "8"], 3, "The second position is 8.", "digit_recall"],
+  ["A sequence flashes once: 1 · 7 · 4 · 9. Select its opening value.", ["1", "4", "7", "9"], 0, "The first position is 1.", "digit_recall"],
+  ["A sequence flashes once: 4 · 8 · 2. Which transformed sequence is correct?", ["5 · 9 · 3", "4 · 9 · 2", "5 · 8 · 3", "3 · 7 · 1"], 0, "Each number increases by one: 5 · 9 · 3.", "updating_memory"],
   ["A sequence flashes: 7 · 2 · 9 · 4. Which pair was adjacent in the original order?", ["7 · 2", "2 · 4", "9 · 7", "4 · 2"], 0, "The original sequence begins with adjacent 7 · 2.", "order_tracking"],
-  ["Remember the order: red, blue, green, yellow. Which colour was immediately before green?", ["Red", "Blue", "Green", "Yellow"], 1, "Blue came immediately before green.", "order_tracking"],
+  ["A sequence flashes once: red · blue · green · yellow. Which colour was immediately before green?", ["Red", "Blue", "Green", "Yellow"], 1, "Blue came immediately before green.", "order_tracking"],
   ["A sequence flashes once: 2 · 6 · 0 · 5. Reverse the order. Which is correct?", ["5 · 0 · 6 · 2", "2 · 0 · 6 · 5", "5 · 6 · 0 · 2", "0 · 5 · 6 · 2"], 0, "Reversing the sequence gives 5 · 0 · 6 · 2.", "mental_manipulation"],
-  ["A sequence flashes once: 7 · 1 · 5 · 4. Which number was third?", ["1", "4", "5", "7"], 2, "The third position is 5.", "digit_recall"],
+  ["A sequence flashes once: 7 · 1 · 5 · 4. Select the value held in slot three.", ["1", "4", "5", "7"], 2, "The third position is 5.", "digit_recall"],
   ["Ignore the ink colour and select the written word: GREEN shown in red ink.", ["RED", "BLUE", "GREEN", "YELLOW"], 2, "The target is the written word GREEN.", "stroop_attention"],
-  ["A sequence flashes once: 6 · 9 · 0 · 3. Which number was last?", ["0", "3", "6", "9"], 1, "The last position is 3.", "digit_recall"],
+  ["A sequence flashes once: 6 · 9 · 0 · 3. Recall the closing value.", ["0", "3", "6", "9"], 1, "The last position is 3.", "digit_recall"],
 ];
 const spatialRows: Row[] = [
   ["A paper square has a dot at the top-left corner. It is flipped horizontally. Where is the dot?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A horizontal flip mirrors left to right.", "mirror_grid"],
@@ -82,7 +82,11 @@ const audioRows: Row[] = [
   ["Listen once, then select the sequence from task nine.", ["5–8–0–2–7", "0–5–8–7–2", "5–0–8–2–7", "7–2–8–0–5"], 2, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "5 0 8 2 7"],
   ["Listen once, then select the sequence from task ten.", ["0–6–3–1–9", "6–0–1–3–9", "0–3–6–9–1", "9–1–3–6–0"], 0, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "0 6 3 1 9"],
 ];
-const build = (section: CsssSection, label: string, duration: number, rows: Row[], prefix: string): CsssQuestion[] => rows.map(([prompt, options, answer, explanation, subtype, audioText], index) => ({ id: `CSSS-${prefix}-${String(index + 1).padStart(2, "0")}`, section, sectionLabel: label, subtype: subtype ?? "standard", duration, prompt, options, answer, explanation, ...(audioText ? { audioText } : {}) }));
+const build = (section: CsssSection, label: string, duration: number, rows: Row[], prefix: string): CsssQuestion[] => rows.map(([rawPrompt, options, answer, explanation, subtype, audioText], index) => {
+  const flashMatch = section === "memory" ? rawPrompt.match(/^A sequence flashes(?: once)?:\s*(.*?)\.\s*(.*)$/) : null;
+  const prompt = flashMatch ? flashMatch[2] : rawPrompt;
+  return { id: `CSSS-${prefix}-${String(index + 1).padStart(2, "0")}`, section, sectionLabel: label, subtype: subtype ?? "standard", duration, prompt, options, answer, explanation, ...(flashMatch ? { flashText: flashMatch[1] } : {}), ...(audioText ? { audioText } : {}) };
+});
 export const csssBank: CsssQuestion[] = [
   ...build("memory", "Working memory & selective attention", 5, memoryRows, "A"),
   ...build("spatial", "Spatial & form perception", 12, spatialRows, "B"),

@@ -4,6 +4,7 @@ import { BackLink, Counter, MiniStat, PageShell, PrimaryButton, ProgressTrack, R
 import { CSSS_SECTION_COUNTS, CSSS_TOTAL, csssBank, type CsssQuestion, type CsssSection } from "../data/csssBank";
 
 type Screen = "landing" | "run" | "pause" | "results";
+type RunPhase = "flash" | "question";
 
 const sectionMeta: Record<CsssSection, { label: string; icon: typeof Brain; count: string }> = {
   memory: { label: "Working memory", icon: Brain, count: `${CSSS_SECTION_COUNTS.memory}Q / 5s` },
@@ -22,6 +23,7 @@ export default function CSSS() {
   const [seconds, setSeconds] = useState(10);
   const [startedAt, setStartedAt] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [runPhase, setRunPhase] = useState<RunPhase>("question");
   const answeringQuestionRef = useRef<string | null>(null);
   const audioPlayedQuestionRef = useRef<string | null>(null);
   const question: CsssQuestion | undefined = csssBank[index];
@@ -33,18 +35,29 @@ export default function CSSS() {
   useEffect(() => {
     if (screen !== "run" || !question) return;
     answeringQuestionRef.current = null;
+    const shouldFlash = question.section === "memory" && Boolean(question.flashText);
+    setRunPhase(shouldFlash ? "flash" : "question");
     setSeconds(question.duration);
-    setStartedAt(performance.now());
     playAudioOnce(question);
-    const timer = window.setInterval(() => setSeconds((value) => {
-      if (value <= 1) {
-        window.clearInterval(timer);
-        advance(-1);
-        return question.duration;
-      }
-      return value - 1;
-    }), 1000);
-    return () => window.clearInterval(timer);
+    let timer: number | undefined;
+    let flashTimer: number | undefined;
+    const beginTimer = () => {
+      setStartedAt(performance.now());
+      timer = window.setInterval(() => setSeconds((value) => {
+        if (value <= 1) {
+          if (timer) window.clearInterval(timer);
+          advance(-1);
+          return question.duration;
+        }
+        return value - 1;
+      }), 1000);
+    };
+    if (shouldFlash) flashTimer = window.setTimeout(() => { setRunPhase("question"); beginTimer(); }, 900);
+    else beginTimer();
+    return () => {
+      if (timer) window.clearInterval(timer);
+      if (flashTimer) window.clearTimeout(flashTimer);
+    };
   }, [screen, index]);
 
   function start() {
@@ -52,6 +65,7 @@ export default function CSSS() {
     audioPlayedQuestionRef.current = null;
     setScreen("run");
     setIndex(0);
+    setRunPhase("question");
     setAnswers([]);
   }
 
@@ -145,5 +159,5 @@ export default function CSSS() {
   if (!question) return null;
   const Meta = sectionMeta[question.section];
   const Icon = Meta.icon;
-    return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">The timer is part of the task. Audio plays once automatically; the spoken sequence is not printed on screen.</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><TrustMark /></div><div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div><h1>{question.prompt}</h1><div className="choice-stack">{question.options.map((option, optionIndex) => <button type="button" key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>{question.section === "audio" ? "Listen once, then answer." : "Response time stays local."}</span></p></div><div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
+    return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">{runPhase === "flash" ? "Memorise the sequence. It will disappear once." : "The sequence has flashed once. Answer from memory; no replay is available."}</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><TrustMark /></div>{runPhase === "flash" && question.flashText ? <div className="prompt-card csss-prompt-card memory-flash" aria-live="assertive"><div className="prompt-label">WORKING MEMORY / FLASH ONCE</div><div className="flash-sequence">{question.flashText}</div><p className="prompt-foot"><span>Memorise now.</span><span>Sequence disappears after one flash.</span></p></div> : <div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div><h1>{question.prompt}</h1><div className="choice-stack">{question.options.map((option, optionIndex) => <button type="button" key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>{question.section === "audio" ? "Listen once, then answer." : "Response time stays local."}</span></p></div>}<div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
 }
