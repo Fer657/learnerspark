@@ -71,16 +71,16 @@ const languageRows: Row[] = [
   ["Book is to reading as fork is to…", ["writing", "eating", "walking", "sleeping"], 1, "A fork is a tool used for eating.", "verbal_analogy"],
 ];
 const audioRows: Row[] = [
-  ["Listen once, then select the sequence from task one.", ["7–9–3–2–8", "7–3–9–2–8", "3–7–9–8–2", "7–3–2–9–8"], 1, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "7 3 9 2 8"],
-  ["Listen once, then select the sequence from task two.", ["4–1–6–8–0", "4–6–1–8–0", "1–4–6–0–8", "8–6–1–4–0"], 0, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "4 1 6 8 0"],
-  ["Listen once, then select the sequence from task three.", ["9–5–2–1–7", "2–9–5–7–1", "9–2–5–1–7", "7–1–5–2–9"], 2, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "9 2 5 1 7"],
-  ["Listen once, then select the sequence from task four.", ["6–0–3–4–8", "0–6–4–3–8", "6–0–4–3–8", "8–3–4–0–6"], 2, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "6 0 4 3 8"],
-  ["Listen once, then select the sequence from task five.", ["2–1–8–5–6", "8–2–1–6–5", "2–8–1–5–6", "5–6–1–8–2"], 2, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "2 8 1 5 6"],
-  ["Listen once, then select the sequence from task six.", ["3–7–0–9–4", "3–0–7–9–4", "7–3–9–0–4", "4–9–0–7–3"], 0, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "3 7 0 9 4"],
-  ["Listen once, then select the sequence from task seven.", ["8–2–5–6–1", "5–8–2–1–6", "8–5–2–6–1", "1–6–2–5–8"], 2, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "8 5 2 6 1"],
-  ["Listen once, then select the sequence from task eight.", ["4–1–9–6–3", "1–4–9–6–3", "1–9–4–3–6", "3–6–9–4–1"], 1, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "1 4 9 6 3"],
-  ["Listen once, then select the sequence from task nine.", ["5–8–0–2–7", "0–5–8–7–2", "5–0–8–2–7", "7–2–8–0–5"], 2, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "5 0 8 2 7"],
-  ["Listen once, then select the sequence from task ten.", ["0–6–3–1–9", "6–0–1–3–9", "0–3–6–9–1", "9–1–3–6–0"], 0, "Review the order and grouping of the heard sequence.", "digit_recall_audio", "0 6 3 1 9"],
+  ["Listen once, then select the number sequence you heard.", ["7–9–3–2–8", "7–3–9–2–8", "3–7–9–8–2", "7–3–2–9–8"], 1, "The correct response preserves the five-number order.", "digit_recall_audio", "7 3 9 2 8"],
+  ["Listen once, then select the word order you heard.", ["alpha bravo delta echo", "alpha delta bravo echo", "bravo alpha delta echo", "alpha bravo echo delta"], 0, "The correct response preserves the spoken word order.", "word_order_audio", "alpha bravo delta echo"],
+  ["Listen once, then select the letter order you heard.", ["K R M T", "K M R T", "R K M T", "K R T M"], 0, "The correct response preserves the spoken letter order.", "letter_order_audio", "K R M T"],
+  ["Listen once, then identify the direction heard in the third position.", ["North", "East", "South", "West"], 2, "South was the third direction in the audio cue.", "direction_tracking_audio", "north east south west"],
+  ["Listen once, then count how many times the word ‘apple’ was heard.", ["2", "3", "4", "5"], 1, "The target word was repeated three times.", "category_count_audio", "apple chair apple river apple"],
+  ["Listen once, then select the pattern of the spoken parity labels.", ["Odd–Even–Even–Odd–Even", "Even–Odd–Even–Odd–Even", "Odd–Even–Odd–Even–Odd", "Even–Even–Odd–Odd–Even"], 0, "The spoken labels follow the first option's pattern.", "parity_pattern_audio", "odd even even odd even"],
+  ["Listen once, then select the action requested by the spoken instruction.", ["Mark the circle", "Underline the square", "Cross the triangle", "Leave the page blank"], 1, "The instruction asks for the square to be underlined.", "instruction_following_audio", "underline the square"],
+  ["Listen once, then decide whether the two spoken pairs are the same or different.", ["Same order", "Different order", "Same words, reversed", "One word missing"], 2, "The second pair contains the same words in reversed order.", "same_different_audio", "red blue; blue red"],
+  ["Listen once, then select the day heard in the fourth position.", ["Monday", "Tuesday", "Wednesday", "Friday"], 1, "Tuesday was heard fourth.", "day_order_audio", "monday wednesday friday tuesday"],
+  ["Listen once, then identify which word was repeated most often.", ["Candle", "Candy", "Cannon", "Canvas"], 0, "Candle was repeated more often than the distractor words.", "word_discrimination_audio", "candle candy candle cannon candle"],
 ];
 const build = (section: CsssSection, label: string, duration: number, rows: Row[], prefix: string): CsssQuestion[] => rows.map(([rawPrompt, options, answer, explanation, subtype, audioText], index) => {
   const flashMatch = section === "memory" ? rawPrompt.match(/^A sequence flashes(?: once)?:\s*(.*?)\.\s*(.*)$/) : null;
