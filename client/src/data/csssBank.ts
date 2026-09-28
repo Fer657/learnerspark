@@ -1,6 +1,8 @@
 export type CsssSection = "memory" | "spatial" | "pattern" | "language" | "audio";
-export type CsssQuestion = { id: string; section: CsssSection; sectionLabel: string; subtype: string; duration: number; prompt: string; renderHint?: string; flashText?: string; audioText?: string; options: string[]; answer: number; explanation: string };
-type Row = [string, string[], number, string, string?, string?];
+import type { QuestionVisual } from "../components/QuestionDiagram";
+
+export type CsssQuestion = { id: string; section: CsssSection; sectionLabel: string; subtype: string; duration: number; prompt: string; renderHint?: string; visual?: QuestionVisual; flashText?: string; audioText?: string; options: string[]; answer: number; explanation: string };
+type Row = [string, string[], number, string, string?, string?, QuestionVisual?];
 
 const memoryRows: Row[] = [
   ["A sequence flashes once: 4 · 9 · 2 · 7. Which number occupied position three?", ["2", "4", "7", "9"], 0, "The third position is 2.", "digit_recall"],
@@ -20,21 +22,21 @@ const memoryRows: Row[] = [
   ["A sequence flashes once: 6 · 9 · 0 · 3. Recall the closing value.", ["0", "3", "6", "9"], 1, "The last position is 3.", "digit_recall"],
 ];
 const spatialRows: Row[] = [
-  ["A paper square has a dot at the top-left corner. It is flipped horizontally. Where is the dot?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A horizontal flip mirrors left to right.", "mirror_grid"],
-  ["A paper square has a dot at the top-left corner. It is flipped vertically. Where is the dot?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 2, "A vertical flip mirrors top to bottom.", "mirror_grid"],
-  ["A square is rotated 90° clockwise. A mark on the top edge moves to which edge?", ["Left", "Right", "Top", "Bottom"], 1, "The top edge moves to the right edge.", "rotation"],
-  ["A route goes north, then east, then south by the same distance. Where are you from the start?", ["West", "East", "North", "At the start"], 1, "North and south cancel, leaving east.", "coordinate_path"],
-  ["A cube has a dot on its top face. It is rolled forward once. Where does the dot move?", ["Bottom", "Front", "Back", "It stays on top"], 1, "Rolling forward brings the top face to the front.", "cube_rotation"],
-  ["You face east, turn left, then left again. Which way do you face?", ["North", "South", "East", "West"], 3, "Two left turns from east lead to west.", "direction"],
-  ["A rectangle is divided into four cells. A mark is in the bottom-right cell. Rotate the grid 90° clockwise. Where is it?", ["Top-right", "Top-left", "Bottom-left", "Bottom-right"], 2, "Bottom-right rotates to bottom-left.", "grid_rotation"],
-  ["A line slopes upward from left to right. Reflect it across a horizontal mirror. What happens?", ["It slopes downward", "It becomes vertical", "It keeps the same slope", "It disappears"], 0, "A horizontal reflection reverses the vertical direction.", "mirror_line"],
-  ["A small arrow points down. Rotate it 90° anticlockwise. Which way does it point?", ["Right", "Left", "Up", "Down"], 0, "Down rotated anticlockwise points right.", "arrow_rotation"],
-  ["A marker moves two cells north and one cell west from the centre. Where is it?", ["Upper-left", "Upper-right", "Lower-left", "Lower-right"], 0, "North is up and west is left.", "coordinate_path"],
-  ["A vertical line is reflected in a vertical mirror. What happens to its orientation?", ["It becomes horizontal", "It remains vertical", "It becomes diagonal", "It vanishes"], 1, "A vertical mirror preserves vertical orientation.", "mirror_line"],
-  ["A path goes east three steps and north one step. Which description matches its displacement?", ["Three west, one south", "Three east, one north", "One east, three north", "It returns to the start"], 1, "The movement is three east and one north.", "coordinate_path"],
-  ["A triangle has its shaded corner at the top-left. It is flipped horizontally. Where does it move?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A horizontal flip mirrors the corner to top-right.", "mirror_grid"],
-  ["A square mark starts at the bottom-left and rotates 180°. Where does it go?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A half-turn maps bottom-left to top-right.", "rotation"],
-  ["A path from the centre goes to 3 o'clock and then 12 o'clock. What shape does the path make?", ["A right angle", "A straight line", "A circle", "No path"], 0, "The two perpendicular moves form a right angle.", "coordinate_path"],
+  ["Study the diagram. A horizontal mirror flips the top-left mark. Where will the mark appear?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A horizontal flip mirrors left to right.", "mirror_grid", undefined, "mirror_horizontal"],
+  ["Study the diagram above the water line. Where should the marked point appear in its water reflection?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 2, "A water reflection mirrors the figure vertically across the horizontal line.", "water_reflection", undefined, "water_reflection"],
+  ["Study the rotation diagram. A square turns 90° clockwise. Which edge receives the top mark?", ["Left", "Right", "Top", "Bottom"], 1, "The top edge moves to the right edge.", "rotation", undefined, "rotation"],
+  ["Follow the illustrated route: north, east, then south by the same distance. Where are you from the start?", ["West", "East", "North", "At the start"], 1, "North and south cancel, leaving east.", "coordinate_path", undefined, "path"],
+  ["Study the cube diagram. It rolls forward once. Where does the top dot move?", ["Bottom", "Front", "Back", "It stays on top"], 1, "Rolling forward brings the top face to the front.", "cube_rotation", undefined, "cube"],
+  ["Use the compass diagram. You face east, turn left, then left again. Which way do you face?", ["North", "South", "East", "West"], 3, "Two left turns from east lead to west.", "direction", undefined, "direction"],
+  ["Study the four-cell diagram. The mark starts bottom-right and the grid rotates 90° clockwise. Where is it?", ["Top-right", "Top-left", "Bottom-left", "Bottom-right"], 2, "Bottom-right rotates to bottom-left.", "grid_rotation", undefined, "grid_rotation"],
+  ["Study the line and mirror axis. What happens when the line is reflected across the horizontal mirror?", ["It slopes downward", "It becomes vertical", "It keeps the same slope", "It disappears"], 0, "A horizontal reflection reverses the vertical direction.", "mirror_line", undefined, "line_mirror"],
+  ["Study the arrow diagram. The downward arrow rotates 90° anticlockwise. Which way does it point?", ["Right", "Left", "Up", "Down"], 0, "Down rotated anticlockwise points right.", "arrow_rotation", undefined, "arrow_rotation"],
+  ["Use the coordinate diagram. A marker moves two cells north and one cell west from centre. Where is it?", ["Upper-left", "Upper-right", "Lower-left", "Lower-right"], 0, "North is up and west is left.", "coordinate_path", undefined, "coordinate"],
+  ["Study the vertical mirror axis. What happens to a vertical line after reflection?", ["It becomes horizontal", "It remains vertical", "It becomes diagonal", "It vanishes"], 1, "A vertical mirror preserves vertical orientation.", "mirror_line", undefined, "line_mirror"],
+  ["Follow the illustrated path: east three steps, then north one step. Which displacement matches it?", ["Three west, one south", "Three east, one north", "One east, three north", "It returns to the start"], 1, "The movement is three east and one north.", "coordinate_path", undefined, "coordinate"],
+  ["Study the triangle diagram. Its shaded corner starts top-left and is flipped horizontally. Where does it move?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A horizontal flip mirrors the corner to top-right.", "mirror_grid", undefined, "mirror_horizontal"],
+  ["Study the square mark. It starts bottom-left and rotates 180°. Where does it go?", ["Top-left", "Top-right", "Bottom-left", "Bottom-right"], 1, "A half-turn maps bottom-left to top-right.", "rotation", undefined, "rotation"],
+  ["Follow the illustrated path from centre to 3 o'clock and then 12 o'clock. What shape does it make?", ["A right angle", "A straight line", "A circle", "No path"], 0, "The two perpendicular moves form a right angle.", "coordinate_path", undefined, "path"],
 ];
 const patternRows: Row[] = [
   ["Sequence: 3, 6, 12, 24, __. Which value comes next?", ["30", "36", "42", "48"], 3, "Each term doubles.", "number_series_doubling"],
@@ -48,10 +50,10 @@ const patternRows: Row[] = [
   ["Sequence: 100, 90, 72, 48, __. Which value is missing?", ["24", "20", "18", "12"], 1, "The next subtraction is 28: 48 − 28 = 20.", "number_series_decreasing"],
   ["Relationship: 3 is to 12 as __ is to __. Which pair preserves the same relationship?", ["4 : 12", "5 : 20", "6 : 18", "7 : 21"], 1, "The relationship is ×4.", "analogy_numbers"],
   ["Coding rule: each letter moves one place forward. What does DOG become?", ["EPH", "EOH", "CNG", "FPH"], 0, "Each letter moves one place forward.", "coding_decoding"],
-  ["Shown pattern: ● ○ __. Which tile completes the alternating visual pattern?", ["● ○ ●", "○ ● ○", "● ● ○", "○ ○ ●"], 0, "The alternating row begins and ends with a filled circle.", "nonverbal_grid"],
-  ["Shown shape: ▲. It rotates 90° clockwise once. Which shape comes next?", ["▲", "▶", "▼", "◀"], 1, "The shape rotates 90 degrees clockwise.", "nonverbal_rotation"],
-  ["Shown arrangement: ◆ · ○. Which option is its left-right mirror?", ["◆ · ○", "○ · ◆", "◆ · ◆", "○ · ○"], 1, "The mirrored arrangement reverses the left and right positions.", "nonverbal_mirror"],
-  ["Shown sequence: □, △, __, ◇. Which symbol fills the missing position?", ["□", "△", "○", "◇"], 2, "The sequence alternates angular and curved forms.", "nonverbal_sequence"],
+  ["Study the visual diagram: ● ○ __. Which tile completes the alternating pattern?", ["● ○ ●", "○ ● ○", "● ● ○", "○ ○ ●"], 0, "The alternating row begins and ends with a filled circle.", "nonverbal_grid", undefined, "nonverbal_grid"],
+  ["Study the triangle in the diagram. After a 90° clockwise turn, which option matches?", ["▲", "▶", "▼", "◀"], 1, "The shape rotates 90 degrees clockwise.", "nonverbal_rotation", undefined, "nonverbal_rotation"],
+  ["Study the figure and the vertical mirror line. Which option is the left-right mirror?", ["◆ · ○", "○ · ◆", "◆ · ◆", "○ · ○"], 1, "The mirrored arrangement reverses the left and right positions.", "nonverbal_mirror", undefined, "nonverbal_mirror"],
+  ["Study the figure above the water line. Which option shows the correct water reflection?", ["◆ above ○", "○ above ◆", "◆ below ○", "○ below ◆"], 2, "A water reflection flips the figure vertically while preserving left and right.", "nonverbal_water", undefined, "nonverbal_water"],
 ];
 const languageRows: Row[] = [
   ["Closest meaning of ‘measured’ in ‘a measured reply’:", ["Angry", "Careful and controlled", "Very long", "Unrelated"], 1, "Measured means considered and controlled.", "vocabulary_synonym"],
@@ -82,10 +84,10 @@ const audioRows: Row[] = [
   ["Listen once, then select the day heard in the fourth position.", ["Monday", "Tuesday", "Wednesday", "Friday"], 1, "Tuesday was heard fourth.", "day_order_audio", "monday wednesday friday tuesday"],
   ["Listen once, then identify which word was repeated most often.", ["Candle", "Candy", "Cannon", "Canvas"], 0, "Candle was repeated more often than the distractor words.", "word_discrimination_audio", "candle candy candle cannon candle"],
 ];
-const build = (section: CsssSection, label: string, duration: number, rows: Row[], prefix: string): CsssQuestion[] => rows.map(([rawPrompt, options, answer, explanation, subtype, audioText], index) => {
+const build = (section: CsssSection, label: string, duration: number, rows: Row[], prefix: string): CsssQuestion[] => rows.map(([rawPrompt, options, answer, explanation, subtype, audioText, visual], index) => {
   const flashMatch = section === "memory" ? rawPrompt.match(/^A sequence flashes(?: once)?:\s*(.*?)\.\s*(.*)$/) : null;
   const prompt = flashMatch ? flashMatch[2] : rawPrompt;
-  return { id: `CSSS-${prefix}-${String(index + 1).padStart(2, "0")}`, section, sectionLabel: label, subtype: subtype ?? "standard", duration, prompt, options, answer, explanation, ...(flashMatch ? { flashText: flashMatch[1] } : {}), ...(audioText ? { audioText } : {}) };
+  return { id: `CSSS-${prefix}-${String(index + 1).padStart(2, "0")}`, section, sectionLabel: label, subtype: subtype ?? "standard", duration, prompt, options, answer, explanation, ...(flashMatch ? { flashText: flashMatch[1] } : {}), ...(audioText ? { audioText } : {}), ...(visual ? { visual } : {}) };
 });
 export const csssBank: CsssQuestion[] = [
   ...build("memory", "Working memory & selective attention", 5, memoryRows, "A"),

@@ -267,6 +267,8 @@ h3 { font-size: 1.12rem; line-height: 1.15; font-weight: 600; }
 .choice-button.is-selected .choice-radio { background: var(--orange); border-color: var(--orange); }
 .prompt-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 35px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--steel); font: .62rem var(--mono); }
 .prompt-type { color: var(--orange); letter-spacing: .08em; text-transform: uppercase; font: .62rem var(--mono); }
+.question-diagram { margin: 0 0 24px; border: 1px solid rgba(23,35,27,.14); background: #f1eadc; border-radius: 8px; overflow: hidden; }
+.question-diagram figcaption { padding: 8px 12px; color: var(--steel); font: .58rem var(--mono); letter-spacing: .05em; text-transform: uppercase; border-top: 1px solid rgba(23,35,27,.1); }
 .memory-flash { min-height: 360px; display: flex; flex-direction: column; justify-content: center; }
 .flash-sequence { margin: 28px 0 12px; color: var(--ink); font: 700 clamp(2.8rem, 8vw, 6.5rem)/1 var(--display); letter-spacing: .14em; text-align: center; }
 .memory-flash .prompt-foot { margin-top: 32px; }
