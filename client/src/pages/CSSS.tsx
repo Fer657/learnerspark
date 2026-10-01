@@ -87,11 +87,11 @@ export default function CSSS() {
       setScreen("results");
       return;
     }
-    if (csssBank[index + 1].section !== question.section) {
+    if (csssBank[index + 1]?.section !== question.section) {
       setScreen("pause");
       return;
     }
-    if (csssBank[index + 1].section === "audio") playAudioOnce(csssBank[index + 1], true);
+    if (csssBank[index + 1]?.section === "audio") playAudioOnce(csssBank[index + 1], true);
     setIndex(index + 1);
   }
 

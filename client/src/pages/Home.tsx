@@ -1,4 +1,4 @@
-import { ArrowRight, Brain, Check, Clock3, Eye, Gauge, Grid3X3, LockKeyhole, MessageCircle, Radar, ScanLine, ShieldCheck, Sparkles, Target, TimerReset, UserRound, Waypoints } from "lucide-react";
+import { ArrowRight, Brain, Check, Gauge, Grid3X3, LockKeyhole, MessageCircle, Radar, ScanLine, ShieldCheck, Target, UserRound } from "lucide-react";
 import { Link } from "wouter";
 import { GhostButton, PrimaryButton, SectionEyebrow, SectionHeading, SiteFooter, SiteHeader, StatusChip, TestimonialCard, TrustMark } from "../components/SiteChrome";
 
