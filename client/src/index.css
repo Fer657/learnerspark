@@ -60,6 +60,9 @@ h3 { font-size: 1.12rem; line-height: 1.15; font-weight: 600; }
 .nav-cta, .primary-button, .ghost-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-size: .78rem; font-weight: 700; letter-spacing: .015em; transition: transform .16s var(--ease), background-color .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease); }
 .nav-cta { padding: 11px 15px; color: var(--sand-light); background: var(--olive); }
 .nav-cta:hover { background: var(--olive-deep); transform: translateY(-2px); }
+.admin-login-link { display: inline-flex; align-items: center; gap: 6px; padding: 9px 11px; color: var(--olive); border: 1px solid rgba(59, 74, 47, .35); font-size: .68rem; font-weight: 700; transition: color .18s var(--ease), background-color .18s var(--ease), border-color .18s var(--ease), transform .18s var(--ease); }
+.admin-login-link:hover { color: var(--sand-light); background: var(--olive); border-color: var(--olive); transform: translateY(-2px); }
+.mobile-admin-login { justify-content: center; margin-top: 8px; padding: 12px 14px; }
 .primary-button { min-height: 49px; padding: 14px 19px; color: var(--sand-pale); background: var(--orange); }
 .primary-button:hover { background: var(--orange-dark); transform: translateY(-2px); }
 .ghost-button { min-height: 49px; padding: 13px 18px; color: var(--sand-pale); border: 1px solid rgba(244, 239, 228, .42); background: transparent; }

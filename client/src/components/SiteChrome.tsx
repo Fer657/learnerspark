@@ -8,6 +8,8 @@ const navItems = [
   { label: "Guides", href: "/guides", status: "Next" },
 ];
 
+const ADMIN_CONSOLE_URL = "https://5001-i6t0qhu3xyl2zv7i2rmbr-152e83d4.sg2.manus.computer/admin/login";
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
@@ -21,10 +23,11 @@ export function SiteHeader() {
         <nav className="desktop-nav" aria-label="Primary navigation">
           {navItems.map((item) => <Link key={item.label} href={item.href} className={`nav-link ${item.href === "/csss" && ["/csss", "/opam"].includes(location) || location === item.href ? "is-active" : ""}`}>{item.label}<span className="nav-status">{item.status}</span></Link>)}
           <Link href="/opam" className="nav-cta">Start a drill <ArrowUpRight size={15} /></Link>
+          <a href={ADMIN_CONSOLE_URL} className="admin-login-link" target="_blank" rel="noreferrer"><ShieldCheck size={14} /> Admin login</a>
         </nav>
         <button className="icon-button mobile-only" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? <X size={21} /> : <Menu size={21} />}</button>
       </div>
-      {open && <div className="mobile-menu mobile-only"><div className="container mobile-menu-inner">{navItems.map((item) => <Link key={item.label} href={item.href} className="mobile-nav-link" onClick={() => setOpen(false)}><span>{item.label}</span><span className="nav-status">{item.status}</span></Link>)}<Link href="/opam" className="nav-cta mobile-cta" onClick={() => setOpen(false)}>Start a drill <ArrowUpRight size={15} /></Link></div></div>}
+      {open && <div className="mobile-menu mobile-only"><div className="container mobile-menu-inner">{navItems.map((item) => <Link key={item.label} href={item.href} className="mobile-nav-link" onClick={() => setOpen(false)}><span>{item.label}</span><span className="nav-status">{item.status}</span></Link>)}<Link href="/opam" className="nav-cta mobile-cta" onClick={() => setOpen(false)}>Start a drill <ArrowUpRight size={15} /></Link><a href={ADMIN_CONSOLE_URL} className="admin-login-link mobile-admin-login" target="_blank" rel="noreferrer"><ShieldCheck size={14} /> Admin login</a></div></div>}
     </header>
   );
 }
