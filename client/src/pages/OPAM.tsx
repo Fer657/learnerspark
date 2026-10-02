@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Clock3, Fingerprint, HeartHandshake, ShieldCheck, TimerReset } from "lucide-react";
 import { BackLink, ChoiceButton, Counter, PageShell, PrimaryButton, ProgressTrack, PrintLink, ReportMetric, RestartButton, SectionEyebrow, SiteFooter, SiteHeader, StatusChip, TrustMark } from "../components/SiteChrome";
+import StudentRegistration from "../components/StudentRegistration";
 import { mixedOpamItems, opamBank, selfItems, situationItems, OPAM_COUNTS, type OpamForcedItem, type OpamItem, type OpamSelfItem, type OpamSituationItem } from "../data/opamBank";
+import { recognizeStudent, saveAssessmentAttempt } from "../lib/student";
 
 type Screen = "landing" | "run" | "report";
 type Answer = { itemId: string; type: OpamItem["type"]; value: string; latency: number; score: number };
@@ -23,6 +25,8 @@ export default function OPAM() {
   const [startedAt, setStartedAt] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [partScores, setPartScores] = useState({ self: 0, forced: 0, situation: 0 });
+  const [studentReady, setStudentReady] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
   const answeringItemRef = useRef<string | null>(null);
   const total = mixedOpamItems.length;
   const completed = answers.length;
@@ -30,6 +34,8 @@ export default function OPAM() {
   const progress = (completed / total) * 100;
   const currentGlobal = index + 1;
   const answeredByType = answers.reduce((counts, answer) => ({ ...counts, [answer.type]: counts[answer.type] + 1 }), { self: 0, forced: 0, situation: 0 });
+
+  useEffect(() => { recognizeStudent().then((student) => setStudentReady(Boolean(student))); }, []);
 
   useEffect(() => {
     if (screen !== "run" || !item) return;
@@ -46,12 +52,17 @@ export default function OPAM() {
     return () => window.clearInterval(timer);
   }, [screen, index]);
 
-  function start() {
+  function beginRun() {
     answeringItemRef.current = null;
     setScreen("run");
     setIndex(0);
     setAnswers([]);
     setPartScores({ self: 0, forced: 0, situation: 0 });
+  }
+
+  function start() {
+    if (!studentReady) { setRegistrationOpen(true); return; }
+    beginRun();
   }
 
   function finishAnswer(value: string, score = 1) {
@@ -62,10 +73,11 @@ export default function OPAM() {
     setPartScores((old) => ({ ...old, [item.type]: old[item.type] + score }));
     if (index < total - 1) return setIndex(index + 1);
     localStorage.setItem("learnerspark-opam-result", JSON.stringify({ answers: nextAnswers, savedAt: new Date().toISOString(), bankSize: total, sequence: "mixed" }));
+    saveAssessmentAttempt("opam", "OPAM Personality Practice", nextAnswers.reduce((sum, answer) => sum + answer.score, 0), Math.round((nextAnswers.reduce((sum, answer) => sum + answer.score, 0) / total) * 100));
     setScreen("report");
   }
 
-  if (screen === "landing") return <PageShell><SiteHeader /><main className="assessment-landing"><div className="container assessment-landing-grid"><div><BackLink /><div className="assessment-kicker"><span className="assessment-badge orange">OPAM</span><span>PERSONALITY ASSESSMENT MODULE</span></div><h1>Answer as <em>you</em> are, not as an ideal officer.</h1><p className="assessment-lead">The full bank now runs through 120 original prompts in a mixed sequence. Self-description, forced choice, and situation reaction items keep changing shape so you practise staying consistent rather than memorising a rhythm.</p><PrimaryButton onClick={start}>Start the assessment</PrimaryButton><p className="assessment-note"><ShieldCheck size={14} /> Your response data stays on this device unless you choose to save it.</p></div><div className="assessment-spec"><div className="spec-heading"><Fingerprint size={21} /><span>THE RUN / MIXED BANK</span></div><div className="spec-number">120</div><p>{OPAM_COUNTS.self} self-description · {OPAM_COUNTS.forced} forced choice · {OPAM_COUNTS.situation} situations</p><div className="spec-list"><div><Clock3 size={16} /><span>15 sec soft timer per response</span></div><div><TimerReset size={16} /><span>question shape changes throughout</span></div><div><HeartHandshake size={16} /><span>consistency is the score</span></div></div><div className="spec-foot"><span>NO BACK NAVIGATION</span><span>MIXED SEQUENCE</span></div></div></div><div className="container"><div className="assessment-legal"><strong>Read this first.</strong><span>There are no “correct” personality answers in self-description or forced choice. Situation items use a best-fit response only to make the debrief actionable. This is original practice content, not an official board instrument.</span></div></div></main><SiteFooter /></PageShell>;
+  if (screen === "landing") return <PageShell><SiteHeader /><main className="assessment-landing"><div className="container assessment-landing-grid"><div><BackLink /><div className="assessment-kicker"><span className="assessment-badge orange">OPAM</span><span>PERSONALITY ASSESSMENT MODULE</span></div><h1>Answer as <em>you</em> are, not as an ideal officer.</h1><p className="assessment-lead">The full bank now runs through 120 original prompts in a mixed sequence. Self-description, forced choice, and situation reaction items keep changing shape so you practise staying consistent rather than memorising a rhythm.</p><PrimaryButton onClick={start}>Start the assessment</PrimaryButton><p className="assessment-note"><ShieldCheck size={14} /> Your response data stays on this device unless you choose to save it.</p></div><div className="assessment-spec"><div className="spec-heading"><Fingerprint size={21} /><span>THE RUN / MIXED BANK</span></div><div className="spec-number">120</div><p>{OPAM_COUNTS.self} self-description · {OPAM_COUNTS.forced} forced choice · {OPAM_COUNTS.situation} situations</p><div className="spec-list"><div><Clock3 size={16} /><span>15 sec soft timer per response</span></div><div><TimerReset size={16} /><span>question shape changes throughout</span></div><div><HeartHandshake size={16} /><span>consistency is the score</span></div></div><div className="spec-foot"><span>NO BACK NAVIGATION</span><span>MIXED SEQUENCE</span></div></div></div><div className="container"><div className="assessment-legal"><strong>Read this first.</strong><span>There are no “correct” personality answers in self-description or forced choice. Situation items use a best-fit response only to make the debrief actionable. This is original practice content, not an official board instrument.</span></div></div></main><SiteFooter />{registrationOpen && <StudentRegistration onClose={() => setRegistrationOpen(false)} onReady={() => { setStudentReady(true); setRegistrationOpen(false); beginRun(); }} />}</PageShell>;
 
   if (screen === "report") {
     const consistency = Math.max(62, Math.min(96, 76 + (partScores.self % 7) * 2 - answers.filter((answer) => answer.latency < 900).length));
