@@ -1,4 +1,4 @@
-export const STUDENT_API_URL = "https://5001-i6t0qhu3xyl2zv7i2rmbr-152e83d4.sg2.manus.computer";
+export const STUDENT_API_URL = "https://5001-i8nby448er6suvm9s2l2n-47263608.sg2.manus.computer";
 const TOKEN_KEY = "learnerspark-student-token";
 const PROFILE_KEY = "learnerspark-student-profile";
 

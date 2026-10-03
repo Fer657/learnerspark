@@ -8,7 +8,7 @@ const navItems = [
   { label: "Guides", href: "/guides", status: "Next" },
 ];
 
-const ADMIN_CONSOLE_URL = "https://5001-i6t0qhu3xyl2zv7i2rmbr-152e83d4.sg2.manus.computer/admin/login";
+const ADMIN_CONSOLE_URL = "https://5001-i8nby448er6suvm9s2l2n-47263608.sg2.manus.computer/admin/login";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
