@@ -27,6 +27,18 @@ export async function registerStudent(payload: Record<string, unknown>) {
   return data.student as StudentProfile;
 }
 
+export async function loginStudent(identifier: string, password: string) {
+  const data = await request("/api/student/login", { method: "POST", body: JSON.stringify({ identifier, password }) });
+  cacheStudent(data.student_token, data.student);
+  return data.student as StudentProfile;
+}
+
+export async function recognizeStudentByContact(email: string, mobile: string) {
+  const data = await request("/api/student/recognize", { method: "POST", body: JSON.stringify({ email, mobile }) });
+  cacheStudent(data.student_token, data.student);
+  return data.student as StudentProfile;
+}
+
 export async function saveAssessmentAttempt(testSlug: string, testName: string, score: number, percentage: number) {
   if (!getStudentToken()) return;
   try { await request("/api/attempts", { method: "POST", body: JSON.stringify({ test_slug: testSlug, test_name: testName, score, percentage, status: "completed" }) }); } catch (error) { console.warn("Assessment could not be synced; local result remains available.", error); }
