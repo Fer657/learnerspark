@@ -6,6 +6,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import OPAM from "./pages/OPAM";
 import CSSS from "./pages/CSSS";
+import Founder from "./pages/Founder";
 import NotFound from "./pages/NotFound";
 import { PageShell, SiteFooter, SiteHeader, SectionEyebrow } from "./components/SiteChrome";
 
@@ -14,7 +15,7 @@ function Upcoming({ title, body }: { title: string; body: string }) {
 }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/opam" component={OPAM} /><Route path="/csss" component={CSSS} /><Route path="/tests"><Upcoming title="Written practice, without the guesswork." body="NDA, CDS and AFCAT practice sets are on deck for Phase 2." /></Route><Route path="/briefs"><Upcoming title="Briefs that become speaking points." body="A daily current-affairs room with a clear SSB angle is on deck for Phase 3." /></Route><Route path="/guides"><Upcoming title="Guides for the work between attempts." body="Mentor-voice guides for the new Stage 1, OLQs, PIQ and psychology tests are on deck." /></Route><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/opam" component={OPAM} /><Route path="/csss" component={CSSS} /><Route path="/founder" component={Founder} /><Route path="/tests"><Upcoming title="Written practice, without the guesswork." body="NDA, CDS and AFCAT practice sets are on deck for Phase 2." /></Route><Route path="/briefs"><Upcoming title="Briefs that become speaking points." body="A daily current-affairs room with a clear SSB angle is on deck for Phase 3." /></Route><Route path="/guides"><Upcoming title="Guides for the work between attempts." body="Mentor-voice guides for the new Stage 1, OLQs, PIQ and psychology tests are on deck." /></Route><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch>;
 }
 
 export default function App() {
