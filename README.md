@@ -1,6 +1,6 @@
 # Learners Park
 
-Learners Park is an independent, mobile-first practice platform for Indian defence aspirants preparing for SSB Stage 1. The current build is **Phase 2**: the home narrative plus functional, no-login CSSS and OPAM practice engines backed by complete original content banks.
+Learners Park is an independent, mobile-first practice platform for Indian defence aspirants preparing for SSB Stage 1. The current build is **Phase 2**: the home narrative plus functional CSSS and OPAM practice engines backed by complete original content banks. The engines run fully on-device by default — no account or network connection is required. An optional account/attempt-sync backend can be enabled per deployment (see [Configuration](#configuration)).
 
 ## Phase 2 included
 
@@ -46,6 +46,18 @@ A brief should follow this shape:
 ```
 
 An OPAM item should retain the item type, trait mapping, reverse-pair key where applicable, and scenario options. Do not mix personal response data into the content files. Response latency belongs on-device unless the learner explicitly opts in to saving a history.
+
+## Configuration
+
+All variables are optional — the site works with none set. Copy `.env.example` to `.env` and adjust as needed.
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `VITE_STUDENT_API_URL` | Base URL of the optional account + attempt-sync service. When unset (or `off`), CSSS/OPAM run fully on-device with a "Continue as guest" flow and no login. | unset → on-device |
+| `VITE_ADMIN_CONSOLE_URL` | Admin console URL shown in the header. When unset, the link is hidden. | unset → hidden |
+| `VITE_ANALYTICS_ENDPOINT` / `VITE_ANALYTICS_WEBSITE_ID` | Optional analytics. Blank values are stripped safely; no placeholder ever ships. | unset → no analytics |
+
+Privacy behaviour follows directly from this: with no `VITE_STUDENT_API_URL`, no profile or result data leaves the browser, and the on-screen copy says so. Configure a backend and the copy switches to the sync wording automatically.
 
 ## Local development
 

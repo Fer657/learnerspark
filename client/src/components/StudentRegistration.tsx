@@ -1,17 +1,208 @@
 import { useState, type FormEvent } from "react";
-import { ShieldCheck, X } from "lucide-react";
-import { loginStudent, registerStudent, type StudentProfile } from "../lib/student";
+import { ShieldCheck, WifiOff, X } from "lucide-react";
+import { isAccountServiceEnabled, loginStudent, registerStudent, type StudentProfile } from "../lib/student";
 
-const fields = [["full_name", "Full name", "text", "e.g. Rahul Sharma"], ["email", "Email address", "email", "you@example.com"], ["mobile", "Mobile number", "tel", "+91 9876543210"], ["date_of_birth", "Date of birth", "date", ""]] as const;
-const choices = { gender: ["Male", "Female", "Other", "Prefer not to say"], education_level: ["Class 9", "Class 10", "Class 11", "Class 12", "Undergraduate", "Graduate", "Postgraduate", "Other"], defence_entry: ["NDA", "CDS", "AFCAT", "INET", "CAPF", "SSB Interview", "Other", "Not decided yet"] };
+const fields = [
+  ["full_name", "Full name", "text", "e.g. Rahul Sharma"],
+  ["email", "Email address", "email", "you@example.com"],
+  ["mobile", "Mobile number", "tel", "+91 9876543210"],
+  ["date_of_birth", "Date of birth", "date", ""],
+] as const;
+const choices = {
+  gender: ["Male", "Female", "Other", "Prefer not to say"],
+  education_level: ["Class 9", "Class 10", "Class 11", "Class 12", "Undergraduate", "Graduate", "Postgraduate", "Other"],
+  defence_entry: ["NDA", "CDS", "AFCAT", "INET", "CAPF", "SSB Interview", "Other", "Not decided yet"],
+};
 const ssbChoices = ["First Time", "Previously Attended SSB", "Not Applicable"];
+
+// Profile returned for a local (account-service-off) run. Nothing leaves the device.
+const guestProfile: StudentProfile = {
+  student_id: "LOCAL-RUN",
+  full_name: "Guest learner",
+  user_role: "guest",
+  profile_status: "on-device",
+  total_tests_attempted: 0,
+  total_tests_completed: 0,
+  average_score: 0,
+};
 
 type Props = { onClose: () => void; onReady: (student: StudentProfile) => void };
 export default function StudentRegistration({ onClose, onReady }: Props) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [form, setForm] = useState<Record<string, string | boolean>>({ consent: false });
-  const [error, setError] = useState(""); const [saving, setSaving] = useState(false); const [student, setStudent] = useState<StudentProfile | null>(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [student, setStudent] = useState<StudentProfile | null>(null);
   const set = (key: string, value: string | boolean) => setForm((old) => ({ ...old, [key]: value }));
-  async function submit(event: FormEvent) { event.preventDefault(); setError(""); setSaving(true); try { const result = mode === "login" ? await loginStudent(String(form.identifier || ""), String(form.password || "")) : await registerStudent(form); setStudent(result); } catch (err) { setError(err instanceof Error ? err.message : "Please check the form and try again."); } finally { setSaving(false); } }
-  return <div className="student-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="student-registration-title"><div className="student-modal"><button type="button" className="student-modal-close" aria-label="Close student access" onClick={onClose}><X size={18} /></button>{student ? <div className="student-success"><span className="student-success-icon">✓</span><p className="eyebrow">PROFILE READY</p><h2>Welcome back, {student.full_name}.</h2><p>Your profile <strong>{student.student_id}</strong> is linked to this assessment. Your previous SSB record is kept once, and future results are added to the same profile.</p><button className="primary-button" type="button" onClick={() => onReady(student)}>Start assessment <span>↗</span></button></div> : <><div className="student-form-heading"><span className="assessment-badge olive">DEFENCE ASPIRANT ACCESS</span><h2 id="student-registration-title">{mode === "login" ? "Continue with your profile." : "Create your student profile."}</h2><p>{mode === "login" ? "Use the email address or mobile number from your profile and your password. You will not need to register again." : "Complete this form once. Your email or mobile number will be your username for future access."}</p></div><form className="student-form" onSubmit={submit}>{mode === "login" ? <><label>Email or mobile number<input required type="text" placeholder="you@example.com or +91 9876543210" value={String(form.identifier || "")} onChange={(event) => set("identifier", event.target.value)} /></label><label>Password<input required type="password" placeholder="Your password" value={String(form.password || "")} onChange={(event) => set("password", event.target.value)} /></label></> : <>{fields.map(([key, label, type, placeholder]) => <label key={key}>{label}<input required type={type} placeholder={placeholder} value={String(form[key] || "")} onChange={(event) => set(key, event.target.value)} /></label>)}<label>Password<input required minLength={8} type="password" placeholder="At least 8 characters" value={String(form.password || "")} onChange={(event) => set("password", event.target.value)} /></label>{Object.entries(choices).map(([key, values]) => <label key={key}>{key.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}<select required value={String(form[key] || "")} onChange={(event) => set(key, event.target.value)}><option value="">Select one</option>{values.map((value) => <option key={value}>{value}</option>)}</select></label>)}<div className="student-form-two"><label>State<input required value={String(form.state || "")} onChange={(event) => set("state", event.target.value)} /></label><label>City<input required value={String(form.city || "")} onChange={(event) => set("city", event.target.value)} /></label></div><div className="student-form-two"><label>Target examination <span className="optional">optional</span><input value={String(form.target_exam || "")} onChange={(event) => set("target_exam", event.target.value)} /></label><label>Attempt year <span className="optional">optional</span><input value={String(form.attempt_year || "")} onChange={(event) => set("attempt_year", event.target.value)} placeholder="2027" /></label></div><label>Previous SSB experience <span className="optional">optional</span><select value={String(form.previous_ssb_experience || "")} onChange={(event) => set("previous_ssb_experience", event.target.value)}><option value="">Select one</option>{ssbChoices.map((value) => <option key={value}>{value}</option>)}</select></label><label className="student-consent"><input required type="checkbox" checked={Boolean(form.consent)} onChange={(event) => set("consent", event.target.checked)} /><span>I agree to the collection and use of the information provided above for creating my student profile and managing my assessment attempts.</span></label><p className="student-privacy"><ShieldCheck size={14} /> Your information is used for profile management, assessment records and related educational purposes. Marketing consent is not required.</p></>} {error && <p className="student-form-error">{error}</p>}<button className="primary-button" disabled={saving} type="submit">{saving ? "Checking profile…" : mode === "login" ? "Log in and start ↗" : "Create Defence Aspirant profile ↗"}</button></form>{mode === "login" && <button type="button" className="student-secondary-action" onClick={() => { setError(""); setMode("register"); }}>New student — create a profile</button>}{mode === "register" && <button type="button" className="student-secondary-action" onClick={() => { setError(""); setMode("login"); }}>Already registered — log in</button>}</>}</div></div>;
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setError("");
+    setSaving(true);
+    try {
+      const result = mode === "login" ? await loginStudent(String(form.identifier || ""), String(form.password || "")) : await registerStudent(form);
+      setStudent(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Please check the form and try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="student-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="student-registration-title">
+      <div className="student-modal">
+        <button type="button" className="student-modal-close" aria-label="Close student access" onClick={onClose}>
+          <X size={18} />
+        </button>
+        {student ? (
+          <div className="student-success">
+            <span className="student-success-icon">✓</span>
+            <p className="eyebrow">PROFILE READY</p>
+            <h2>Welcome back, {student.full_name}.</h2>
+            <p>
+              Your profile <strong>{student.student_id}</strong> is linked to this assessment. Results are saved locally and future results are added to the same profile.
+            </p>
+            <button className="primary-button" type="button" onClick={() => onReady(student)}>
+              Start assessment <span>↗</span>
+            </button>
+          </div>
+        ) : !isAccountServiceEnabled ? (
+          // ------- Local / guest mode: no backend configured -------
+          <div className="student-guest">
+            <div className="student-form-heading">
+              <span className="assessment-badge olive">PRIVATE PRACTICE MODE</span>
+              <h2 id="student-registration-title">Start without an account.</h2>
+              <p>This deployment runs entirely in your browser. No sign-in is required and nothing is uploaded.</p>
+            </div>
+            <div className="student-guest-note">
+              <ShieldCheck size={16} />
+              <span>Your answers and results stay on this device. Clearing your browser data removes them.</span>
+            </div>
+            <div className="student-guest-note">
+              <WifiOff size={16} />
+              <span>Result history is kept locally, not on a server.</span>
+            </div>
+            <button className="primary-button" type="button" onClick={() => onReady(guestProfile)}>
+              Continue as guest <span>↗</span>
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="student-form-heading">
+              <span className="assessment-badge olive">DEFENCE ASPIRANT ACCESS</span>
+              <h2 id="student-registration-title">{mode === "login" ? "Continue with your profile." : "Create your student profile."}</h2>
+              <p>
+                {mode === "login"
+                  ? "Use the email address or mobile number from your profile and your password. You will not need to register again."
+                  : "Complete this form once. Your email or mobile number will be your username for future access."}
+              </p>
+            </div>
+            <form className="student-form" onSubmit={submit}>
+              {mode === "login" ? (
+                <>
+                  <label>
+                    Email or mobile number
+                    <input required type="text" placeholder="you@example.com or +91 9876543210" value={String(form.identifier || "")} onChange={(event) => set("identifier", event.target.value)} />
+                  </label>
+                  <label>
+                    Password
+                    <input required type="password" placeholder="Your password" value={String(form.password || "")} onChange={(event) => set("password", event.target.value)} />
+                  </label>
+                </>
+              ) : (
+                <>
+                  {fields.map(([key, label, type, placeholder]) => (
+                    <label key={key}>
+                      {label}
+                      <input required type={type} placeholder={placeholder} value={String(form[key] || "")} onChange={(event) => set(key, event.target.value)} />
+                    </label>
+                  ))}
+                  <label>
+                    Password
+                    <input required minLength={8} type="password" placeholder="At least 8 characters" value={String(form.password || "")} onChange={(event) => set("password", event.target.value)} />
+                  </label>
+                  {Object.entries(choices).map(([key, values]) => (
+                    <label key={key}>
+                      {key.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}
+                      <select required value={String(form[key] || "")} onChange={(event) => set(key, event.target.value)}>
+                        <option value="">Select one</option>
+                        {values.map((value) => (
+                          <option key={value}>{value}</option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                  <div className="student-form-two">
+                    <label>
+                      State
+                      <input required value={String(form.state || "")} onChange={(event) => set("state", event.target.value)} />
+                    </label>
+                    <label>
+                      City
+                      <input required value={String(form.city || "")} onChange={(event) => set("city", event.target.value)} />
+                    </label>
+                  </div>
+                  <div className="student-form-two">
+                    <label>
+                      Target examination <span className="optional">optional</span>
+                      <input value={String(form.target_exam || "")} onChange={(event) => set("target_exam", event.target.value)} />
+                    </label>
+                    <label>
+                      Attempt year <span className="optional">optional</span>
+                      <input value={String(form.attempt_year || "")} onChange={(event) => set("attempt_year", event.target.value)} placeholder="2027" />
+                    </label>
+                  </div>
+                  <label>
+                    Previous SSB experience <span className="optional">optional</span>
+                    <select value={String(form.previous_ssb_experience || "")} onChange={(event) => set("previous_ssb_experience", event.target.value)}>
+                      <option value="">Select one</option>
+                      {ssbChoices.map((value) => (
+                        <option key={value}>{value}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="student-consent">
+                    <input required type="checkbox" checked={Boolean(form.consent)} onChange={(event) => set("consent", event.target.checked)} />
+                    <span>I agree to the collection and use of the information provided above for creating my student profile and managing my assessment attempts.</span>
+                  </label>
+                  <p className="student-privacy">
+                    <ShieldCheck size={14} /> Your information is used for profile management, assessment records and related educational purposes. Marketing consent is not required.
+                  </p>
+                </>
+              )}
+              {error && <p className="student-form-error">{error}</p>}
+              <button className="primary-button" disabled={saving} type="submit">
+                {saving ? "Checking profile…" : mode === "login" ? "Log in and start ↗" : "Create Defence Aspirant profile ↗"}
+              </button>
+            </form>
+            {mode === "login" && (
+              <button
+                type="button"
+                className="student-secondary-action"
+                onClick={() => {
+                  setError("");
+                  setMode("register");
+                }}
+              >
+                New student — create a profile
+              </button>
+            )}
+            {mode === "register" && (
+              <button
+                type="button"
+                className="student-secondary-action"
+                onClick={() => {
+                  setError("");
+                  setMode("login");
+                }}
+              >
+                Already registered — log in
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
