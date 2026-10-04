@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Learners Park">
+  <rect width="32" height="32" rx="7" fill="#182118" />
+  <g fill="#e07b2a" transform="skewX(-22) translate(9 0)">
+    <rect x="0" y="8" width="16" height="3.6" rx="1.2" />
+    <rect x="0" y="14.2" width="11.5" height="3.6" rx="1.2" />
+    <rect x="0" y="20.4" width="7" height="3.6" rx="1.2" />
+  </g>
+</svg>

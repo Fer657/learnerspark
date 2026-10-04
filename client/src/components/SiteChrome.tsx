@@ -8,7 +8,9 @@ const navItems = [
   { label: "Guides", href: "/guides", status: "Next" },
 ];
 
-const ADMIN_CONSOLE_URL = "https://5001-i8nby448er6suvm9s2l2n-47263608.sg2.manus.computer/admin/login";
+// The admin console is optional and configured per-deployment. When unset, the
+// header link is hidden entirely rather than pointing at a stale sandbox URL.
+const ADMIN_CONSOLE_URL = ((import.meta.env.VITE_ADMIN_CONSOLE_URL as string | undefined) || "").trim();
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -24,7 +26,7 @@ export function SiteHeader() {
           {navItems.map((item) => <Link key={item.label} href={item.href} className={`nav-link ${item.href === "/csss" && ["/csss", "/opam"].includes(location) || location === item.href ? "is-active" : ""}`}>{item.label}<span className="nav-status">{item.status}</span></Link>)}
           <Link href="/opam" className="nav-cta">Start a drill <ArrowUpRight size={15} /></Link>
           <Link href="/founder" className="founder-nav-link">Contact</Link>
-          <a href={ADMIN_CONSOLE_URL} className="admin-login-link" target="_blank" rel="noreferrer"><ShieldCheck size={14} /> Admin login</a>
+          {ADMIN_CONSOLE_URL && <a href={ADMIN_CONSOLE_URL} className="admin-login-link" target="_blank" rel="noreferrer"><ShieldCheck size={14} /> Admin login</a>}
         </nav>
         <button className="icon-button mobile-only" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? <X size={21} /> : <Menu size={21} />}</button>
       </div>
@@ -38,7 +40,7 @@ export function TrustNotice({ compact = false }: { compact?: boolean }) {
 }
 
 export function SiteFooter() {
-  return <footer className="site-footer"><div className="container"><TrustNotice /><div className="footer-grid"><div><div className="brand-lockup footer-brand"><span className="brand-mark"><span /><span /><span /></span><span><strong className="brand-name">Learners Park</strong><small className="brand-tagline">Honest reps. Better readiness.</small></span></div><p className="footer-note">A calm, pattern-aware practice room for the next generation of defence aspirants.</p></div><div><p className="footer-label">Explore</p><div className="footer-links"><Link href="/opam">OPAM simulator</Link><Link href="/csss">CSSS simulator</Link><Link href="/tests">Written practice</Link><Link href="/founder">Contact</Link></div></div><div><p className="footer-label">Official information</p><div className="footer-links"><a href="https://joinindianarmy.nic.in" target="_blank" rel="noreferrer">Indian Army <ArrowUpRight size={13} /></a><a href="https://careerairforce.nic.in" target="_blank" rel="noreferrer">Indian Air Force <ArrowUpRight size={13} /></a><a href="https://joinindiannavy.gov.in" target="_blank" rel="noreferrer">Indian Navy <ArrowUpRight size={13} /></a></div></div></div><div className="footer-bottom"><span>© 2026 Learners Park</span><span>Privacy-first by default · Response data stays on-device</span><span>Phase 2 full banks</span></div></div></footer>;
+  return <footer className="site-footer"><div className="container"><TrustNotice /><div className="footer-grid"><div><div className="brand-lockup footer-brand"><span className="brand-mark"><span /><span /><span /></span><span><strong className="brand-name">Learners Park</strong><small className="brand-tagline">Honest reps. Better readiness.</small></span></div><p className="footer-note">A calm, pattern-aware practice room for the next generation of defence aspirants.</p></div><div><p className="footer-label">Explore</p><div className="footer-links"><Link href="/opam">OPAM simulator</Link><Link href="/csss">CSSS simulator</Link><Link href="/tests">Written practice</Link><Link href="/founder">Contact</Link></div></div><div><p className="footer-label">Official information</p><div className="footer-links"><a href="https://joinindianarmy.nic.in" target="_blank" rel="noreferrer">Indian Army <ArrowUpRight size={13} /></a><a href="https://careerairforce.nic.in" target="_blank" rel="noreferrer">Indian Air Force <ArrowUpRight size={13} /></a><a href="https://joinindiannavy.gov.in" target="_blank" rel="noreferrer">Indian Navy <ArrowUpRight size={13} /></a></div></div></div><div className="footer-bottom"><span>© 2026 Learners Park</span><span>Privacy-first by default · Results saved locally on your device</span><span>Phase 2 full banks</span></div></div></footer>;
 }
 
 export function PageShell({ children }: { children: ReactNode }) { return <div className="min-h-screen bg-sand text-ink">{children}</div>; }
@@ -52,7 +54,7 @@ export function TimerRing({ seconds, total }: { seconds: number; total: number }
 export function BackLink({ href = "/", label = "Back to Learners Park" }: { href?: string; label?: string }) { return <Link href={href} className="back-link">← {label}</Link>; }
 export function ScoreBar({ label, value, tone = "olive" }: { label: string; value: number; tone?: "olive" | "orange" | "steel" }) { return <div className="score-bar-wrap"><div className="score-bar-label"><span>{label}</span><strong>{value}%</strong></div><div className="score-bar"><span className={`score-bar-fill ${tone}`} style={{ width: `${value}%` }} /></div></div>; }
 export function PhasePill({ children = "Phase 1" }: { children?: ReactNode }) { return <span className="phase-pill">{children}</span>; }
-export function AccessNote() { return <p className="access-note">No account required · private by default · keyboard friendly</p>; }
+export function AccessNote() { return <p className="access-note">On-device results · private by default · keyboard friendly</p>; }
 export function MiniStat({ label, value }: { label: string; value: string }) { return <div className="mini-stat"><strong>{value}</strong><small>{label}</small></div>; }
 export function StatusChip({ children, tone = "olive" }: { children: ReactNode; tone?: "olive" | "orange" | "steel" }) { return <span className={`status-chip ${tone}`}>{children}</span>; }
 export function ArrowLink({ href, children }: { href: string; children: ReactNode }) { return <Link href={href} className="arrow-link">{children}<ArrowUpRight size={15} /></Link>; }

@@ -18,8 +18,18 @@ async function startServer() {
 
   app.use(express.static(staticPath));
 
-  // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
+  // Handler for everything not matched by express.static.
+  app.use((req, res) => {
+    // A request that looks like a file (has an extension) must NOT receive
+    // index.html — otherwise a missing image/script is returned as HTML with a
+    // 200, which browsers silently render as a broken resource. Return a real 404.
+    const looksLikeAsset = path.extname(req.path) !== "";
+    if (looksLikeAsset || req.method !== "GET") {
+      res.status(404).send("Not found");
+      return;
+    }
+
+    // Otherwise serve the SPA shell so client-side routes survive a refresh.
     res.sendFile(path.join(staticPath, "index.html"));
   });
 

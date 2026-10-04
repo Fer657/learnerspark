@@ -4,7 +4,7 @@ import { BackLink, Counter, MiniStat, PageShell, PrimaryButton, ProgressTrack, R
 import QuestionDiagram from "../components/QuestionDiagram";
 import StudentRegistration from "../components/StudentRegistration";
 import { CSSS_SECTION_COUNTS, CSSS_TOTAL, csssBank, type CsssQuestion, type CsssSection } from "../data/csssBank";
-import { recognizeStudent, saveAssessmentAttempt } from "../lib/student";
+import { isAccountServiceEnabled, recognizeStudent, saveAssessmentAttempt } from "../lib/student";
 
 type Screen = "landing" | "run" | "pause" | "results";
 type RunPhase = "flash" | "question";
@@ -36,6 +36,8 @@ export default function CSSS() {
   const [runPhase, setRunPhase] = useState<RunPhase>("question");
   const [studentReady, setStudentReady] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [ttsAvailable, setTtsAvailable] = useState(true);
+  const [audioRevealed, setAudioRevealed] = useState(false);
   const answeringQuestionRef = useRef<string | null>(null);
   const audioPlayedQuestionRef = useRef<string | null>(null);
   const question: CsssQuestion | undefined = csssBank[index];
@@ -44,7 +46,10 @@ export default function CSSS() {
   const nextSection = index < CSSS_TOTAL - 1 ? csssBank[index + 1].section : null;
   const sectionQuestions = useMemo(() => csssBank.filter((item) => item.section === nextSection), [nextSection]);
 
-  useEffect(() => { recognizeStudent().then((student) => setStudentReady(Boolean(student))); }, []);
+  useEffect(() => {
+    recognizeStudent().then((student) => setStudentReady(Boolean(student) || !isAccountServiceEnabled));
+    setTtsAvailable(typeof window !== "undefined" && "speechSynthesis" in window);
+  }, []);
 
   useEffect(() => {
     if (screen !== "run" || !question) return;
@@ -52,6 +57,7 @@ export default function CSSS() {
     const shouldFlash = question.section === "memory" && Boolean(question.flashText);
     setRunPhase(shouldFlash ? "flash" : "question");
     setSeconds(question.duration);
+    setAudioRevealed(question.section === "audio" && !ttsAvailable);
     playAudioOnce(question);
     let timer: number | undefined;
     let flashTimer: number | undefined;
@@ -116,6 +122,11 @@ export default function CSSS() {
   function playAudioOnce(target: CsssQuestion, immediate = false) {
     if (target.section !== "audio" || audioPlayedQuestionRef.current === target.id) return;
     audioPlayedQuestionRef.current = target.id;
+    if (!ttsAvailable) {
+      // No speech engine on this device: keep the item answerable by showing the cue.
+      setAudioRevealed(true);
+      return;
+    }
     if (immediate) playAudioCue(target);
     else window.setTimeout(() => playAudioCue(target), 80);
   }
@@ -179,5 +190,5 @@ export default function CSSS() {
   if (!question) return null;
   const Meta = sectionMeta[question.section];
   const Icon = Meta.icon;
-    return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">{runPhase === "flash" ? "Memorise the sequence. It will disappear once." : "The sequence has flashed once. Answer from memory; no replay is available."}</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><span className="prompt-type">{formatQuestionType(question.subtype)}</span><TrustMark /></div>{runPhase === "flash" && question.flashText ? <div className="prompt-card csss-prompt-card memory-flash" aria-live="assertive"><div className="prompt-label">WORKING MEMORY / FLASH ONCE</div><div className="flash-sequence">{question.flashText}</div><p className="prompt-foot"><span>Memorise now.</span><span>Sequence disappears after one flash.</span></p></div> : <div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div>{question.visual ? <QuestionDiagram type={question.visual} label={`${formatQuestionType(question.subtype)} diagram`} /> : null}<h1>{question.prompt}</h1><div className="choice-stack">{question.options.map((option, optionIndex) => <button type="button" key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>{question.section === "audio" ? "Listen once, then answer." : "Response time stays local."}</span></p></div>}<div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
+    return <PageShell><div className="assessment-shell"><header className="assessment-header"><div className="container assessment-header-inner"><BackLink label="Exit run" /><div className="assessment-header-brand"><span className="brand-mark"><span /><span /><span /></span><span>CSSS / {Meta.label}</span></div><div className="assessment-header-right"><Counter current={index + 1} total={CSSS_TOTAL} /><TimerRing seconds={seconds} total={question.duration} /></div></div></header><main className="assessment-run csss-run"><div className="container assessment-run-grid"><aside className="assessment-rail"><span className="rail-label">BATTERY STATUS</span><div className="rail-progress"><span style={{ height: `${progress}%` }} /></div><div className="rail-steps">{sectionOrder.map((key, step) => { const StepIcon = sectionMeta[key].icon; const active = key === question.section; const done = sectionOrder.indexOf(question.section) > step; return <div key={key} className={`${active ? "active" : ""} ${done ? "done" : ""}`}><span>{String(step + 1).padStart(2, "0")}</span><small><StepIcon size={13} />{sectionMeta[key].label} · {CSSS_SECTION_COUNTS[key]}</small></div>; })}</div><p className="rail-note">{runPhase === "flash" ? "Memorise the sequence. It will disappear once." : "The sequence has flashed once. Answer from memory; no replay is available."}</p></aside><section className="prompt-stage"><div className="prompt-meta"><StatusChip tone="orange"><Icon size={14} /> {Meta.count}</StatusChip><span className="prompt-type">{formatQuestionType(question.subtype)}</span><TrustMark /></div>{runPhase === "flash" && question.flashText ? <div className="prompt-card csss-prompt-card memory-flash" aria-live="assertive"><div className="prompt-label">WORKING MEMORY / FLASH ONCE</div><div className="flash-sequence">{question.flashText}</div><p className="prompt-foot"><span>Memorise now.</span><span>Sequence disappears after one flash.</span></p></div> : <div className="prompt-card csss-prompt-card"><div className="prompt-label">{question.sectionLabel.toUpperCase()}</div>{question.visual ? <QuestionDiagram type={question.visual} label={`${formatQuestionType(question.subtype)} diagram`} /> : null}<h1>{question.prompt}</h1>{question.section === "audio" && audioRevealed && question.audioText ? <div className="audio-assist" role="note"><span className="audio-assist-label">TRANSCRIPT</span><span className="audio-assist-text">{question.audioText}</span></div> : null}{question.section === "audio" && !audioRevealed && ttsAvailable ? <button type="button" className="audio-assist-trigger" onClick={() => setAudioRevealed(true)}>Couldn’t hear the cue? Show the text instead</button> : null}<div className="choice-stack">{question.options.map((option, optionIndex) => <button type="button" key={`${question.id}-${option}`} className="csss-option" onClick={() => advance(optionIndex)}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span></button>)}</div><p className="prompt-foot"><span>One direction only.</span><span>{question.section === "audio" ? "Listen once, then answer." : "Response time stays local."}</span></p></div>}<div className="assessment-progress"><ProgressTrack value={progress} /><span>{answered} answered · {CSSS_TOTAL - answered} to go</span></div></section></div></main></div></PageShell>;
 }

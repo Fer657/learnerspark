@@ -24,10 +24,10 @@ const testimonials = [
 
 export default function Home() {
   return <div className="min-h-screen bg-sand text-ink"><SiteHeader /><main>
-    <section className="hero-section" style={{ backgroundImage: "url('/manus-storage/learnerspark-hero_82e0ab25.jpg')" }}>
+    <section className="hero-section">
       <div className="hero-overlay" />
       <div className="container hero-inner">
-        <div className="hero-copy"><SectionEyebrow dark>SSB STAGE 1 · FIELD PREP / 01</SectionEyebrow><h1>Crack SSB Stage 1 — <em>before</em> you enter the hall.</h1><p className="hero-subhead">Train for the shape of the test, not a fantasy of yourself. Timed CSSS drills, honest OPAM signals, and a calmer way to build readiness.</p><div className="hero-actions"><PrimaryButton href="/csss">Take CSSS practice</PrimaryButton><GhostButton href="/opam">Take OPAM assessment</GhostButton></div><p className="hero-fineprint"><ShieldCheck size={14} /> No login. No prediction. Just reps that stay on your device.</p></div>
+        <div className="hero-copy"><SectionEyebrow dark>SSB STAGE 1 · FIELD PREP / 01</SectionEyebrow><h1>Crack SSB Stage 1 — <em>before</em> you enter the hall.</h1><p className="hero-subhead">Train for the shape of the test, not a fantasy of yourself. Timed CSSS drills, honest OPAM signals, and a calmer way to build readiness.</p><div className="hero-actions"><PrimaryButton href="/csss">Take CSSS practice</PrimaryButton><GhostButton href="/opam">Take OPAM assessment</GhostButton></div><p className="hero-fineprint"><ShieldCheck size={14} /> No prediction. No borrowed confidence. Just reps you can trust.</p></div>
         <div className="hero-instrument"><div className="instrument-top"><span>LP / READOUT</span><span>LIVE DEMO</span></div><div className="instrument-circle"><div className="instrument-crosshair" /><div className="instrument-sweep" /><span className="instrument-center">01</span></div><div className="instrument-readout"><div><span>Signal</span><strong>READY</strong></div><div><span>Response window</span><strong>10—22 SEC</strong></div></div><div className="instrument-footer"><span>CSSS / OPAM</span><span>ON-DEVICE</span></div></div>
       </div>
       <div className="hero-bottom-strip"><div className="container hero-strip-inner"><span>TRAIN THE SIGNAL</span><span className="strip-separator">/</span><span>KEEP THE STORY HONEST</span><span className="strip-separator">/</span><span>SHOW UP BETTER</span></div></div>
