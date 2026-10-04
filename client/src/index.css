@@ -621,3 +621,5 @@ h3 { font-size: 1.12rem; line-height: 1.15; font-weight: 600; }
 .admin-access-aside h2 { margin: 29px 0 25px; font-size: 1.65rem; line-height: 1.2; }
 .admin-access-aside ol { display: grid; gap: 19px; padding-left: 20px; color: rgba(249,242,227,.78); font-size: .84rem; line-height: 1.55; }
 @media (max-width: 830px) { .admin-access-layout { grid-template-columns: 1fr; gap: 48px; } .admin-access-page { padding: 75px 0 90px; } }
+
+.admin-access-copy .admin-access-preview-note { max-width: 590px; margin-top: 18px; color: var(--steel); font-size: .84rem; line-height: 1.6; }

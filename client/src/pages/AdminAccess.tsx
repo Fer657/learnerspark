@@ -17,9 +17,13 @@ export default function AdminAccess() {
             <h1>Admin Console</h1>
             <p>Content management, Defence Aspirant records, and platform activity are available only to authorized administrators through a separate, server-protected console.</p>
             {secureAdminUrl ? (
-              <a className="primary-button admin-access-action" href={secureAdminUrl} target="_blank" rel="noopener noreferrer">
-                Open secure Admin Console <ArrowUpRight size={17} />
-              </a>
+              <>
+                <a className="primary-button admin-access-action" href={secureAdminUrl} target="_blank" rel="noopener noreferrer">
+                  Open secure Admin Console <ArrowUpRight size={17} />
+                </a>
+                {new URL(secureAdminUrl).hostname.endsWith(".manus.computer") &&
+                  <p className="admin-access-preview-note">This console currently uses a temporary sandbox address. If it is unavailable, the separate admin service needs to be restarted; permanent hosting is still required.</p>}
+              </>
             ) : (
               <div className="admin-access-state" role="status">
                 <ServerOff size={24} aria-hidden="true" />

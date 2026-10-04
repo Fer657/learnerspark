@@ -8,9 +8,10 @@ const navItems = [
   { label: "Guides", href: "/guides", status: "Next" },
 ];
 
-// The public button always leads to a stable route; that route connects to the
-// server-protected console only when its permanent HTTPS URL is configured.
-const ADMIN_CONSOLE_URL = "/admin";
+// Use the configured HTTPS console when available; /admin remains an honest,
+// stable fallback instead of ever sending visitors to an empty or unsafe URL.
+const configuredAdminUrl = ((import.meta.env.VITE_ADMIN_CONSOLE_URL as string | undefined) || "").trim();
+const ADMIN_CONSOLE_URL = /^https:\/\/[^\s]+$/i.test(configuredAdminUrl) ? configuredAdminUrl : "/admin";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
