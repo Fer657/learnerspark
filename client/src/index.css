@@ -602,3 +602,22 @@ h3 { font-size: 1.12rem; line-height: 1.15; font-weight: 600; }
   .content-page-hero { padding: 66px 0; }
   .content-page-body { padding: 66px 0 72px; }
 }
+
+/* Public admin doorway; actual authentication remains server-side. */
+.admin-access-page { min-height: 660px; padding: 112px 0 130px; background: var(--sand-pale); }
+.admin-access-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, .8fr); gap: 8%; align-items: start; }
+.admin-access-kicker { display: inline-flex; align-items: center; gap: 9px; color: var(--orange-dark); font: 700 .72rem var(--mono); letter-spacing: .1em; }
+.admin-access-copy h1 { margin: 24px 0 20px; color: var(--olive-dark); font-size: clamp(3rem, 6vw, 5.4rem); line-height: 1.05; }
+.admin-access-copy > p { max-width: 690px; color: var(--steel); font-size: 1.05rem; line-height: 1.7; }
+.admin-access-action { margin-top: 35px; }
+.admin-access-state { display: flex; align-items: flex-start; gap: 18px; max-width: 670px; margin-top: 38px; padding: 23px; border-left: 4px solid var(--orange); color: var(--olive-dark); background: #fff; box-shadow: var(--shadow); }
+.admin-access-state > svg { flex: 0 0 auto; color: var(--orange-dark); }
+.admin-access-state strong { display: block; font-size: 1rem; }
+.admin-access-state p { margin-top: 8px; color: var(--steel); font-size: .87rem; line-height: 1.65; }
+.admin-access-links { display: flex; flex-wrap: wrap; align-items: center; gap: 28px; margin-top: 32px; }
+.admin-access-links a { display: inline-flex; gap: 7px; align-items: center; color: var(--olive-dark); font-size: .83rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.admin-access-aside { padding: 38px; color: var(--sand-light); background: var(--olive-dark); }
+.admin-access-aside > span { font: 700 .65rem var(--mono); color: var(--orange); letter-spacing: .09em; }
+.admin-access-aside h2 { margin: 29px 0 25px; font-size: 1.65rem; line-height: 1.2; }
+.admin-access-aside ol { display: grid; gap: 19px; padding-left: 20px; color: rgba(249,242,227,.78); font-size: .84rem; line-height: 1.55; }
+@media (max-width: 830px) { .admin-access-layout { grid-template-columns: 1fr; gap: 48px; } .admin-access-page { padding: 75px 0 90px; } }

@@ -8,9 +8,9 @@ const navItems = [
   { label: "Guides", href: "/guides", status: "Next" },
 ];
 
-// The admin console is optional and configured per-deployment. When unset, the
-// header link is hidden entirely rather than pointing at a stale sandbox URL.
-const ADMIN_CONSOLE_URL = ((import.meta.env.VITE_ADMIN_CONSOLE_URL as string | undefined) || "").trim();
+// The public button always leads to a stable route; that route connects to the
+// server-protected console only when its permanent HTTPS URL is configured.
+const ADMIN_CONSOLE_URL = "/admin";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
