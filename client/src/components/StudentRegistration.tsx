@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { ShieldCheck, WifiOff, X } from "lucide-react";
-import { isAccountServiceEnabled, loginStudent, registerStudent, type StudentProfile } from "../lib/student";
+import { ShieldCheck, X } from "lucide-react";
+import { loginStudent, registerStudent, type StudentProfile } from "../lib/student";
 
 const fields = [
   ["full_name", "Full name", "text", "e.g. Rahul Sharma"],
@@ -14,17 +14,6 @@ const choices = {
   defence_entry: ["NDA", "CDS", "AFCAT", "INET", "CAPF", "SSB Interview", "Other", "Not decided yet"],
 };
 const ssbChoices = ["First Time", "Previously Attended SSB", "Not Applicable"];
-
-// Profile returned for a local (account-service-off) run. Nothing leaves the device.
-const guestProfile: StudentProfile = {
-  student_id: "LOCAL-RUN",
-  full_name: "Guest learner",
-  user_role: "guest",
-  profile_status: "on-device",
-  total_tests_attempted: 0,
-  total_tests_completed: 0,
-  average_score: 0,
-};
 
 type Props = { onClose: () => void; onReady: (student: StudentProfile) => void };
 export default function StudentRegistration({ onClose, onReady }: Props) {
@@ -61,30 +50,10 @@ export default function StudentRegistration({ onClose, onReady }: Props) {
             <p className="eyebrow">PROFILE READY</p>
             <h2>Welcome back, {student.full_name}.</h2>
             <p>
-              Your profile <strong>{student.student_id}</strong> is linked to this assessment. Results are saved locally and future results are added to the same profile.
+              Your profile <strong>{student.student_id}</strong> is linked to this assessment. Completed results sync securely to this profile, while an on-device summary remains available.
             </p>
             <button className="primary-button" type="button" onClick={() => onReady(student)}>
               Start assessment <span>↗</span>
-            </button>
-          </div>
-        ) : !isAccountServiceEnabled ? (
-          // ------- Local / guest mode: no backend configured -------
-          <div className="student-guest">
-            <div className="student-form-heading">
-              <span className="assessment-badge olive">PRIVATE PRACTICE MODE</span>
-              <h2 id="student-registration-title">Start without an account.</h2>
-              <p>This deployment runs entirely in your browser. No sign-in is required and nothing is uploaded.</p>
-            </div>
-            <div className="student-guest-note">
-              <ShieldCheck size={16} />
-              <span>Your answers and results stay on this device. Clearing your browser data removes them.</span>
-            </div>
-            <div className="student-guest-note">
-              <WifiOff size={16} />
-              <span>Result history is kept locally, not on a server.</span>
-            </div>
-            <button className="primary-button" type="button" onClick={() => onReady(guestProfile)}>
-              Continue as guest <span>↗</span>
             </button>
           </div>
         ) : (

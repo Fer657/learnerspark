@@ -47,7 +47,10 @@ export default function CSSS() {
   const sectionQuestions = useMemo(() => csssBank.filter((item) => item.section === nextSection), [nextSection]);
 
   useEffect(() => {
-    recognizeStudent().then((student) => setStudentReady(Boolean(student) || !isAccountServiceEnabled));
+    recognizeStudent().then((student) => {
+      setStudentReady(Boolean(student));
+      if (student) setRegistrationOpen(false);
+    });
     setTtsAvailable(typeof window !== "undefined" && "speechSynthesis" in window);
   }, []);
 

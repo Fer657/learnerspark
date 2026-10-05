@@ -88,7 +88,10 @@ export default function OPAM() {
   const answeredByType = answers.reduce((counts, answer) => ({ ...counts, [answer.type]: counts[answer.type] + 1 }), { self: 0, forced: 0, situation: 0 });
 
   useEffect(() => {
-    recognizeStudent().then((student) => setStudentReady(Boolean(student) || !isAccountServiceEnabled));
+    recognizeStudent().then((student) => {
+      setStudentReady(Boolean(student));
+      if (student) setRegistrationOpen(false);
+    });
   }, []);
 
   useEffect(() => {

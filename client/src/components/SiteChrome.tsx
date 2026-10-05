@@ -8,10 +8,8 @@ const navItems = [
   { label: "Guides", href: "/guides", status: "Next" },
 ];
 
-// Use the configured HTTPS console when available; /admin remains an honest,
-// stable fallback instead of ever sending visitors to an empty or unsafe URL.
-const configuredAdminUrl = ((import.meta.env.VITE_ADMIN_CONSOLE_URL as string | undefined) || "").trim();
-const ADMIN_CONSOLE_URL = /^https:\/\/[^\s]+$/i.test(configuredAdminUrl) ? configuredAdminUrl : "/admin";
+// The owner console is now served by this same managed application.
+const ADMIN_CONSOLE_URL = "/admin/dashboard";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -41,7 +39,7 @@ export function TrustNotice({ compact = false }: { compact?: boolean }) {
 }
 
 export function SiteFooter() {
-  return <footer className="site-footer"><div className="container"><TrustNotice /><div className="footer-grid"><div><div className="brand-lockup footer-brand"><span className="brand-mark"><span /><span /><span /></span><span><strong className="brand-name">Learners Park</strong><small className="brand-tagline">Honest reps. Better readiness.</small></span></div><p className="footer-note">A calm, pattern-aware practice room for the next generation of defence aspirants.</p></div><div><p className="footer-label">Explore</p><div className="footer-links"><Link href="/opam">OPAM simulator</Link><Link href="/csss">CSSS simulator</Link><Link href="/tests">Written practice</Link><Link href="/founder">Contact</Link></div></div><div><p className="footer-label">Official information</p><div className="footer-links"><a href="https://joinindianarmy.nic.in" target="_blank" rel="noreferrer">Indian Army <ArrowUpRight size={13} /></a><a href="https://careerairforce.nic.in" target="_blank" rel="noreferrer">Indian Air Force <ArrowUpRight size={13} /></a><a href="https://joinindiannavy.gov.in" target="_blank" rel="noreferrer">Indian Navy <ArrowUpRight size={13} /></a></div></div></div><div className="footer-bottom"><span>© 2026 Learners Park</span><span>Privacy-first by default · Results saved locally on your device</span><span>Phase 2 full banks</span></div></div></footer>;
+  return <footer className="site-footer"><div className="container"><TrustNotice /><div className="footer-grid"><div><div className="brand-lockup footer-brand"><span className="brand-mark"><span /><span /><span /></span><span><strong className="brand-name">Learners Park</strong><small className="brand-tagline">Honest reps. Better readiness.</small></span></div><p className="footer-note">A calm, pattern-aware practice room for the next generation of defence aspirants.</p></div><div><p className="footer-label">Explore</p><div className="footer-links"><Link href="/opam">OPAM simulator</Link><Link href="/csss">CSSS simulator</Link><Link href="/tests">Written practice</Link><Link href="/founder">Contact</Link></div></div><div><p className="footer-label">Official information</p><div className="footer-links"><a href="https://joinindianarmy.nic.in" target="_blank" rel="noreferrer">Indian Army <ArrowUpRight size={13} /></a><a href="https://careerairforce.nic.in" target="_blank" rel="noreferrer">Indian Air Force <ArrowUpRight size={13} /></a><a href="https://joinindiannavy.gov.in" target="_blank" rel="noreferrer">Indian Navy <ArrowUpRight size={13} /></a></div></div></div><div className="footer-bottom"><span>© 2026 Learners Park</span><span>Account profiles and completed attempts stored securely</span><span>Phase 2 full banks</span></div></div></footer>;
 }
 
 export function PageShell({ children }: { children: ReactNode }) { return <div className="min-h-screen bg-sand text-ink">{children}</div>; }
@@ -61,7 +59,7 @@ export function StatusChip({ children, tone = "olive" }: { children: ReactNode; 
 export function ArrowLink({ href, children }: { href: string; children: ReactNode }) { return <Link href={href} className="arrow-link">{children}<ArrowUpRight size={15} /></Link>; }
 export function TestimonialCard({ children }: { children: ReactNode }) { return <div className="testimonial-card">{children}</div>; }
 export function Avatar({ initials }: { initials: string }) { return <span className="avatar">{initials}</span>; }
-export function TrustMark() { return <span className="trust-mark"><ShieldCheck size={14} /> on-device practice</span>; }
+export function TrustMark() { return <span className="trust-mark"><ShieldCheck size={14} /> private practice</span>; }
 export function OptionIndex({ children }: { children: ReactNode }) { return <span className="option-index">{children}</span>; }
 export function Counter({ current, total }: { current: number; total: number }) { return <span className="counter">{String(current).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>; }
 export function AnsweredDot({ state }: { state: "answered" | "current" | "unvisited" }) { return <span className={`answered-dot ${state}`} />; }
