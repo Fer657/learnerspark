@@ -1,17 +1,8 @@
 import "dotenv/config";
-import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
-import { registerStorageProxy } from "./storageProxy";
-import { appRouter } from "../routers";
-import { createContext } from "./context";
+import { createApp } from "./app";
 import { serveStatic } from "./static";
-import { reportEnvStatus } from "./env";
-import { securityHeaders } from "./security";
-import { createRateLimiter } from "./rate-limit";
-import { registerHealthRoutes } from "./health";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,37 +24,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
-  reportEnvStatus();
-  const app = express();
+  const app = createApp();
   const server = createServer(app);
 
-  const apiLimiter = createRateLimiter({ windowMs: 60_000, max: 120 });
-  const oauthLimiter = createRateLimiter({
-    windowMs: 15 * 60_000,
-    max: 30,
-    message: "Too many login attempts. Please try again later.",
-  });
-
-  app.disable("x-powered-by");
-  // Behind a host's reverse proxy, trust one hop so req.ip reflects the client.
-  if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
-  app.use(securityHeaders);
-  registerHealthRoutes(app);
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  app.use("/api/oauth", oauthLimiter);
-  registerStorageProxy(app);
-  registerOAuthRoutes(app);
-  // tRPC API
-  app.use(
-    "/api/trpc",
-    apiLimiter,
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     const { setupVite } = await import("./vite");

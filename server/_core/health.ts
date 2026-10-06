@@ -6,8 +6,8 @@ import { getDb } from "../db";
  * Liveness probe: the process is up and serving. Cheap, no dependencies.
  * Suitable for a platform's health check or an uptime monitor.
  */
-export function registerHealthRoutes(app: Express) {
-  app.get("/healthz", (_req, res) => {
+export function registerHealthRoutes(app: Express, base = "") {
+  app.get(`${base}/healthz`, (_req, res) => {
     res.status(200).json({
       status: "ok",
       uptime: Math.round(process.uptime()),
@@ -20,7 +20,7 @@ export function registerHealthRoutes(app: Express) {
    * designed to run without a database, so an unconfigured DB reports ready
    * with `database: "disabled"` rather than failing.
    */
-  app.get("/readyz", async (_req, res) => {
+  app.get(`${base}/readyz`, async (_req, res) => {
     if (!process.env.DATABASE_URL) {
       res.status(200).json({ status: "ready", database: "disabled" });
       return;
