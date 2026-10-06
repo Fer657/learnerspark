@@ -1,6 +1,6 @@
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
-import type { AppRouter } from "../../../server/routers";
+import type { AppRouter } from "@shared/api";
 
 // The student account service is hosted with the public site. One HttpOnly
 // cookie is shared by CSSS and OPAM; no bearer tokens or passwords are stored

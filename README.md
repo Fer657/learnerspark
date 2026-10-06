@@ -1,6 +1,6 @@
 # Learners Park
 
-Learners Park is an independent, mobile-first practice platform for Indian defence aspirants preparing for SSB Stage 1. The current build is **Phase 2**: the home narrative plus functional CSSS and OPAM practice engines backed by complete original content banks. The engines run fully on-device by default — no account or network connection is required. An optional account/attempt-sync backend can be enabled per deployment (see [Configuration](#configuration)).
+Learners Park is an independent, mobile-first practice platform for Indian defence aspirants preparing for SSB Stage 1. The current build is **Phase 2**: the home narrative plus functional CSSS and OPAM practice engines backed by complete original content banks. The engines run fully on-device by default — no account or network connection is required. The same deployment also ships an optional full-stack backend (Express + tRPC + Drizzle/MySQL) for student accounts, saved attempts, and the admin console; it activates automatically when the server variables below are configured (see [Configuration](#configuration)).
 
 ## Phase 2 included
 
@@ -49,35 +49,71 @@ An OPAM item should retain the item type, trait mapping, reverse-pair key where 
 
 ## Configuration
 
-All variables are optional — the site works with none set. Copy `.env.example` to `.env` and adjust as needed.
+Copy `.env.example` to `.env` and fill in what you need. The SPA (CSSS/OPAM) runs with no variables; the values below enable the backend features.
 
-| Variable | Purpose | Default |
+**Server**
+
+| Variable | Required | Purpose |
 |---|---|---|
-| `VITE_STUDENT_API_URL` | Base URL of the optional account + attempt-sync service. When unset (or `off`), CSSS/OPAM run fully on-device with a "Continue as guest" flow and no login. | unset → on-device |
-| `VITE_ADMIN_CONSOLE_URL` | Admin console URL shown in the header. When unset, the link is hidden. | unset → hidden |
-| `VITE_ANALYTICS_ENDPOINT` / `VITE_ANALYTICS_WEBSITE_ID` | Optional analytics. Blank values are stripped safely; no placeholder ever ships. | unset → no analytics |
+| `DATABASE_URL` | for accounts/admin | MySQL connection string used by Drizzle ORM. Without it, accounts, saved attempts, and admin data are unavailable. |
+| `JWT_SECRET` | for accounts | Secret used to sign session cookies. Use a long random value; an empty secret is insecure. |
+| `OAUTH_SERVER_URL` | for admin login | OAuth provider base URL for owner/admin sign-in. Student email/mobile login does not need it. |
+| `VITE_APP_ID` | for admin login | OAuth client id. |
+| `OWNER_OPEN_ID` | no | openId granted the `admin` role. |
+| `BUILT_IN_FORGE_API_URL` / `BUILT_IN_FORGE_API_KEY` | no | Object storage used by the `/manus-storage` proxy. |
 
-Privacy behaviour follows directly from this: with no `VITE_STUDENT_API_URL`, no profile or result data leaves the browser, and the on-screen copy says so. Configure a backend and the copy switches to the sync wording automatically.
+**Client (build-time)**
+
+| Variable | Purpose |
+|---|---|
+| `VITE_OAUTH_PORTAL_URL` | OAuth portal used for the admin sign-in redirect. When unset, that button does nothing. |
+| `VITE_APP_ID` | Same OAuth client id as above, read at build time. |
+
+In production the server logs a `[env] WARNING` at boot for each missing non-critical variable, and **refuses to start if `JWT_SECRET` is unset** (bypass with `SKIP_ENV_VALIDATION=1` only if you accept the risk).
+
+Privacy behaviour follows from this: with no backend configured, no profile or result data leaves the browser, and the on-screen copy says so.
 
 ## Local development
 
 ```bash
 pnpm install
-pnpm dev
+pnpm dev              # Express + Vite dev server (HMR)
+pnpm db:push          # apply Drizzle migrations (needs DATABASE_URL)
 ```
 
 Validate before handoff:
 
 ```bash
-pnpm check
-pnpm build
+pnpm check            # tsc --noEmit
+pnpm test             # vitest
+pnpm build            # vite build + bundle server to dist/index.js
+pnpm start            # run the production server (NODE_ENV=production)
 ```
 
-## Deploying to Vercel or Netlify
+`pnpm build` emits the SPA to `dist/public` and bundles the server to `dist/index.js`. The build isolates dev-only Vite code into a separate chunk, so `dist/index.js` has no runtime dependency on devDependencies and can run under `pnpm install --prod`.
 
-Use the project root as the repository root. Build with `pnpm build`. The static frontend is emitted under `dist/public`; the scaffold's start script can serve it with the generated Node wrapper. For a static-only host, configure the publish directory as `dist/public` and add a history-fallback rewrite from `/*` to `/index.html` so `/opam` and `/csss` continue to work on refresh.
+## Deployment
 
-The project is already configured for a Vite build. Do not expose response data through a public API in the static build. If accounts, database-backed result history, or scheduled daily briefs are added later, upgrade the scaffold to the full-stack WebDev template before adding secrets.
+This is a full-stack Node app. Deploy it to any host that runs a persistent Node process (Render, Railway, Fly.io, a VPS, or a container platform).
+
+1. Provision MySQL and set `DATABASE_URL` (plus `JWT_SECRET`, and the OAuth variables if you use admin login).
+2. Build and run: `pnpm install`, `pnpm build`, then `pnpm db:push` and `pnpm start`.
+3. Set the platform's start command to `pnpm start` and expose the port via `PORT`.
+4. Point the platform's health check at `GET /healthz` (liveness). Use `GET /readyz` for readiness — it pings MySQL when `DATABASE_URL` is set and returns `503` while the database is unreachable.
+5. For a static-only host you can instead publish `dist/public` and add a history-fallback rewrite from `/*` to `/index.html` so `/opam` and `/csss` survive a refresh — but accounts, saved attempts, and admin features will be unavailable.
+
+A `Dockerfile` is included (multi-stage, production dependencies only) if you prefer containers:
+
+```bash
+docker build -t learnerspark .
+docker run -p 3000:3000 -e DATABASE_URL=... -e JWT_SECRET=... learnerspark
+```
+
+Security defaults: `helmet`-style headers are set on every response, HSTS/CSP in production, `X-Powered-By` is disabled, the API is rate-limited per IP, and per-account login limits back the student login route.
+
+CI runs on every push and pull request via `.github/workflows/ci.yml` (typecheck, test, build).
+
+Do not expose response data through a public API. The `/api/*` routes are the backend; keep secrets in the host's environment, never in the repo.
 
 ## Pointing `learnerspark.online`
 
